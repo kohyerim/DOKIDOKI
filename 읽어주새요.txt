@@ -1,0 +1,15 @@
+게임 실행하기 전에 해야할 것
+
+1. python 깔기 (되어있다고 믿어요 ^^,,,)
+2. 명령프롬프트 열어서 [pip install pygame]입력! (파이게임 라이브러리 설치)
+3. Mario_Bros.py 실행!
+
+# wasd 조작 + space 점프 + enter 선택
+# pygame이 안깔려있으면 게임이 실행이 안대용
+
+p.s 파이참깔려면요 professional은 유료버전 community는 무료버전이에용
+
+###주로 봐야할 파일 목록###
+1. Mario_Bros.py
+2. data 에서 basetype.py, *main.py*
+3. data 폴더 안의 폴더 components에 있는거 다~ __init__.py 말구
