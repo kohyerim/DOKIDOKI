@@ -1,7 +1,5 @@
 DOKI DOKI
 =============
-![screenshot](
-        DOKIDOKI/screenshot.png
-      )
+![screenshot](https://raw.github.com/kohyerim/DOKIDOKI/screenshot.png)
 
 building...
