@@ -1,655 +1,1142 @@
-from ..basetypes import Game_Object, Vector2, Entity, Rectangle, State_Machine, State
-from .. import config as c
-from .. import sprites
-from .. import sounds
-from ..utils import accelerate, clamp, get_flipped_sprite
-from .. import level
+__author__ = 'justinarmstrong'
+
 import pygame as pg
-import random
+from .. import setup, tools
+from .. import constants as c
+from . import powerups
 
 
-# Mario 클래스 안에 클래스가 있는데 잘못 친거 아니구요 클래스안에 클래스 넣을 수 있구 Mario 클래스 안에서만 쓰는 클래스입니다!@!
-# 여기에는 Mario 클래스 밖에 없지만 마리오의 전반적인 움직임이랑 충돌(몬스터랑 코인 등등?)을 관리하는 클래스~!
-class Mario(Entity):
-    """Mario Class"""
-    def __init__(self, rect, vel = Vector2()):
-        super(Mario, self).__init__(vel, rect)
-        self.animation = self.Animation()
-        self.action_states = State_Machine(self.Idle_State(), self)
-        self.mario_states = State_Machine(self.Small_Mario(), self)
+class Mario(pg.sprite.Sprite):
+    def __init__(self):
+        pg.sprite.Sprite.__init__(self)
+        self.sprite_sheet = setup.GFX['mario_bros']
 
-        self.pressed_left = False
-        self.pressed_right = False
-        self.spacebar = False
-        self.crouch = False
-        self.freeze_movement = False
-        self.freeze_input = False
+        self.setup_timers()
+        self.setup_state_booleans()
+        self.setup_forces()
+        self.setup_counters()
+        self.load_images_from_sheet()
 
-        self.flip_sprites = False
-        self.to_menu = False
+        self.state = c.WALK
+        self.image = self.right_frames[self.frame_index]
+        self.rect = self.image.get_rect()
+        self.mask = pg.mask.from_surface(self.image)
 
-        self.start_height = 0
+        self.key_timer = 0
 
-    def __getattr__(self, name):
-        """Shorter variable calls"""
-        if name == 'current_action_state':
-            return self.action_states.get_state()
-        elif name == 'pos':
-            return self.rect.pos
-        elif name == 'current_mario_state':
-            return self.mario_states.get_state()
-        return object.__getattribute__(self, name)
 
-    def draw(self):
-        """Extract sprite from atlas"""
-        if c.camera.contains(self.rect):
-            view_pos = c.camera.to_view_space(self.pos)
-            if self.flip_sprites:
-                flipped_sprite = get_flipped_sprite(self.animation.current_sprite)
-                c.screen.blit(sprites.tile_set_flipped, (view_pos.x, view_pos.y), flipped_sprite)
-            else:
-                c.screen.blit(sprites.tile_set, (view_pos.x, view_pos.y), self.animation.current_sprite)
+    def setup_timers(self):
+        """Sets up timers for animations"""
+        self.walking_timer = 0
+        self.invincible_animation_timer = 0
+        self.invincible_start_timer = 0
+        self.fire_transition_timer = 0
+        self.death_timer = 0
+        self.transition_timer = 0
+        self.last_fireball_time = 0
+        self.hurt_invisible_timer = 0
+        self.hurt_invisible_timer2 = 0
+        self.flag_pole_timer = 0
 
-    def update(self):
-        """Get input and perform actions"""
-        if not self.freeze_input:
-            if c.keys[pg.K_a] and not c.keys[pg.K_d]:
-                self.pressed_left = True
-                c.ACCELERATION = -c.MARIO_ACCELERATION
-            elif c.keys[pg.K_d] and not c.keys[pg.K_a]:
-                self.pressed_right = True
-                c.ACCELERATION = c.MARIO_ACCELERATION
-            else:
-                c.ACCELERATION = 0
-            
-            if not c.keys[pg.K_a]:
-                self.pressed_left = False
-            if not c.keys[pg.K_d]:
-                self.pressed_right = False
 
-            if c.keys[pg.K_SPACE] and not self.spacebar:
-                self.spacebar = True
-                self.action_states.on_event('jump')
-            
-            if not c.keys[pg.K_SPACE]:
-                self.spacebar = False
+    def setup_state_booleans(self):
+        """Sets up booleans that affect Mario's behavior"""
+        self.facing_right = True
+        self.allow_jump = True
+        self.dead = False
+        self.invincible = False
+        self.big = False
+        self.fire = False
+        self.allow_fireball = True
+        self.in_transition_state = False
+        self.hurt_invincible = False
+        self.in_castle = False
+        self.crouching = False
+        self.losing_invincibility = False
 
-            if c.keys[pg.K_s]:
-                self.crouch = True
-            else:
-                self.crouch = False
 
-    def physics_update(self):
-        """Perform actions based on input"""
-        if self.current_mario_state != 'Invincible_Mario':
-            self.mario_states.update()
+    def setup_forces(self):
+        """Sets up forces that affect Mario's velocity"""
+        self.x_vel = 0
+        self.y_vel = 0
+        self.max_x_vel = c.MAX_WALK_SPEED
+        self.max_y_vel = c.MAX_Y_VEL
+        self.x_accel = c.WALK_ACCEL
+        self.jump_vel = c.JUMP_VEL
+        self.gravity = c.GRAVITY
 
-        if not self.freeze_movement:
-            self.state_events()
-            self.action_states.update()
-            self.movement()
 
-            #Make sure that mario can't jump when running off a ledge
-            if self.pos.y > self.start_height:
-                self.action_states.on_event('no jump')
-                
-            self.check_flip_sprites()
+    def setup_counters(self):
+        """These keep track of various total for important values"""
+        self.frame_index = 0
+        self.invincible_index = 0
+        self.fire_transition_index = 0
+        self.fireball_count = 0
+        self.flag_pole_right = 0
 
-        if self.current_mario_state == 'Invincible_Mario':
-            self.mario_states.update()
 
-        self.rect.h = self.animation.current_sprite[3]
+    def load_images_from_sheet(self):
+        """Extracts Mario images from his sprite sheet and assigns
+        them to appropriate lists"""
+        self.right_frames = []
+        self.left_frames = []
 
-        if self.pos.y > c.SCREEN_SIZE.y:
-            self.mario_states.on_event('dead')
+        self.right_small_normal_frames = []
+        self.left_small_normal_frames = []
+        self.right_small_green_frames = []
+        self.left_small_green_frames = []
+        self.right_small_red_frames = []
+        self.left_small_red_frames = []
+        self.right_small_black_frames = []
+        self.left_small_black_frames = []
 
-    def movement(self):
-        """Aggregates movement related statements"""
-        accelerate(self, c.ACCELERATION, c.GRAVITY, c.MAX_VEL)
-        self.vel.x *= c.FRICTION
-        self.move()
+        self.right_big_normal_frames = []
+        self.left_big_normal_frames = []
+        self.right_big_green_frames = []
+        self.left_big_green_frames = []
+        self.right_big_red_frames = []
+        self.left_big_red_frames = []
+        self.right_big_black_frames = []
+        self.left_big_black_frames = []
 
-    def check_flip_sprites(self):
-        """Check whether to flip sprites"""
-        if self.vel.x < 0:
-            self.flip_sprites = True
-        elif self.vel.x > 0:
-            self.flip_sprites = False
+        self.right_fire_frames = []
+        self.left_fire_frames = []
 
-    def state_events(self):
-        """Change current state based on events and perform actions based on current state"""
-        if any(self.current_action_state == state for state in ['Move_State', 'Decel_State', 'Brake_State', 'Idle_State']):
-            self.start_height = self.pos.y
 
-        if self.vel.y == 0:
-            if self.pressed_left or self.pressed_right:
-                self.action_states.on_event('move')
+        #Images for normal small mario#
 
-            if ((self.vel.x < 0 and not self.pressed_left) or
-                (self.vel.x > 0 and not self.pressed_right)):
-                self.action_states.on_event('decel')
-            
-            if ((self.vel.x < 0 and self.pressed_right) or
-                (self.vel.x > 0 and self.pressed_left)):
-                self.action_states.on_event('brake')
+        self.right_small_normal_frames.append(
+            self.get_image(178, 32, 12, 16))  # Right [0]
+        self.right_small_normal_frames.append(
+            self.get_image(80,  32, 15, 16))  # Right walking 1 [1]
+        self.right_small_normal_frames.append(
+            self.get_image(96,  32, 16, 16))  # Right walking 2 [2]
+        self.right_small_normal_frames.append(
+            self.get_image(112,  32, 16, 16))  # Right walking 3 [3]
+        self.right_small_normal_frames.append(
+            self.get_image(144, 32, 16, 16))  # Right jump [4]
+        self.right_small_normal_frames.append(
+            self.get_image(130, 32, 14, 16))  # Right skid [5]
+        self.right_small_normal_frames.append(
+            self.get_image(160, 32, 15, 16))  # Death frame [6]
+        self.right_small_normal_frames.append(
+            self.get_image(320, 8, 16, 24))  # Transition small to big [7]
+        self.right_small_normal_frames.append(
+            self.get_image(241, 33, 16, 16))  # Transition big to small [8]
+        self.right_small_normal_frames.append(
+            self.get_image(194, 32, 12, 16))  # Frame 1 of flag pole Slide [9]
+        self.right_small_normal_frames.append(
+            self.get_image(210, 33, 12, 16))  # Frame 2 of flag pole slide [10]
 
-            if abs(self.vel.x) < 0.02 and self.current_action_state != 'Move_State':
-                self.vel.x = 0
-                self.action_states.on_event('idle')
 
-        if all(self.current_action_state != state for state in ['Decel_State', 'Brake_State', 'Crouch_State']):
-            c.FRICTION = 1
+        #Images for small green mario (for invincible animation)#
 
-        if any(self.current_action_state == state for state in ['Jump_State', 'No_Jump_State']):
-            if self.animation.mario_size == 'Small_Mario':
-                self.animation.current_sprite = sprites.SMALL_MARIO_JUMP
-            else:
-                self.animation.current_sprite = sprites.BIG_MARIO_JUMP
+        self.right_small_green_frames.append(
+            self.get_image(178, 224, 12, 16))  # Right standing [0]
+        self.right_small_green_frames.append(
+            self.get_image(80, 224, 15, 16))  # Right walking 1 [1]
+        self.right_small_green_frames.append(
+            self.get_image(96, 224, 16, 16))  # Right walking 2 [2]
+        self.right_small_green_frames.append(
+            self.get_image(112, 224, 15, 16))  # Right walking 3 [3]
+        self.right_small_green_frames.append(
+            self.get_image(144, 224, 16, 16))  # Right jump [4]
+        self.right_small_green_frames.append(
+            self.get_image(130, 224, 14, 16))  # Right skid [5]
 
-        if self.current_mario_state == 'Big_Mario':
-            if self.crouch:
-                self.action_states.on_event('crouch')
+        #Images for red mario (for invincible animation)#
 
-    def move(self):
-        """Separates x and y movement"""
-        if self.vel.x != 0:
-            self.move_single_axis(self.vel.x, 0)
-        if self.vel.y != 0:
-            self.move_single_axis(0, self.vel.y)
+        self.right_small_red_frames.append(
+            self.get_image(178, 272, 12, 16))  # Right standing [0]
+        self.right_small_red_frames.append(
+            self.get_image(80, 272, 15, 16))  # Right walking 1 [1]
+        self.right_small_red_frames.append(
+            self.get_image(96, 272, 16, 16))  # Right walking 2 [2]
+        self.right_small_red_frames.append(
+            self.get_image(112, 272, 15, 16))  # Right walking 3 [3]
+        self.right_small_red_frames.append(
+            self.get_image(144, 272, 16, 16))  # Right jump [4]
+        self.right_small_red_frames.append(
+            self.get_image(130, 272, 14, 16))  # Right skid [5]
 
-    def move_single_axis(self, dx, dy):
-        """Move based on velocity and check for collisions based on new position"""
-        self.pos.x += dx * c.delta_time
-        self.pos.y += dy * c.delta_time
+        #Images for black mario (for invincible animation)#
 
-        self.collider_collisions(dx, dy)
-        if self.current_mario_state != 'Invincible_Mario':
-            self.check_entity_collisions() 
+        self.right_small_black_frames.append(
+            self.get_image(178, 176, 12, 16))  # Right standing [0]
+        self.right_small_black_frames.append(
+            self.get_image(80, 176, 15, 16))  # Right walking 1 [1]
+        self.right_small_black_frames.append(
+            self.get_image(96, 176, 16, 16))  # Right walking 2 [2]
+        self.right_small_black_frames.append(
+            self.get_image(112, 176, 15, 16))  # Right walking 3 [3]
+        self.right_small_black_frames.append(
+            self.get_image(144, 176, 16, 16))  # Right jump [4]
+        self.right_small_black_frames.append(
+            self.get_image(130, 176, 14, 16))  # Right skid [5]
 
-        self.check_backtrack()
 
-    def check_backtrack(self):
-        """Stop mario from backtracking in the level"""
-        if self.pos.x < c.camera.pos.x:
-            self.pos.x = clamp(self.pos.x, c.camera.pos.x, c.SCREEN_SIZE.x)
-            self.vel.x = 0   
-            if all(self.current_action_state != state for state in ["Jump_State", "No_Jump_State"]):
-                self.action_states.on_event('idle')      
+        #Images for normal big Mario
 
-    def collider_collisions(self, dx, dy):
-        """Check for collisions with tiles"""
-        other_collider = self.rect.check_collisions(level.static_colliders + level.dynamic_colliders)
+        self.right_big_normal_frames.append(
+            self.get_image(176, 0, 16, 32))  # Right standing [0]
+        self.right_big_normal_frames.append(
+            self.get_image(81, 0, 16, 32))  # Right walking 1 [1]
+        self.right_big_normal_frames.append(
+            self.get_image(97, 0, 15, 32))  # Right walking 2 [2]
+        self.right_big_normal_frames.append(
+            self.get_image(113, 0, 15, 32))  # Right walking 3 [3]
+        self.right_big_normal_frames.append(
+            self.get_image(144, 0, 16, 32))  # Right jump [4]
+        self.right_big_normal_frames.append(
+            self.get_image(128, 0, 16, 32))  # Right skid [5]
+        self.right_big_normal_frames.append(
+            self.get_image(336, 0, 16, 32))  # Right throwing [6]
+        self.right_big_normal_frames.append(
+            self.get_image(160, 10, 16, 22))  # Right crouching [7]
+        self.right_big_normal_frames.append(
+            self.get_image(272, 2, 16, 29))  # Transition big to small [8]
+        self.right_big_normal_frames.append(
+            self.get_image(193, 2, 16, 30))  # Frame 1 of flag pole slide [9]
+        self.right_big_normal_frames.append(
+            self.get_image(209, 2, 16, 29))  # Frame 2 of flag pole slide [10]
 
-        if other_collider is None:
-            return
-        if dx > 0:
-            if self.current_action_state == 'Move_State':
-                self.action_states.on_event('idle')
-            self.pos.x = other_collider.pos.x - self.rect.w
-            self.vel.x = 0
-        elif dx < 0:
-            if self.current_action_state == 'Move_State':
-                self.action_states.on_event('idle')
-            self.pos.x = other_collider.pos.x + other_collider.rect.w
-            self.vel.x = 0
-        elif dy > 0:
-            if self.current_action_state == 'No_Jump_State':
-                self.action_states.on_event('idle')
-            self.pos.y = other_collider.pos.y - self.rect.h
-            self.vel.y = 0
-        elif dy < 0:
-            self.interact_with_tile(other_collider)
-            self.action_states.on_event('no jump')
-            self.pos.y = other_collider.pos.y + other_collider.rect.h
-            self.vel.y = c.BOUNCE_VEL
+        #Images for green big Mario#
 
-    def check_entity_collisions(self):
-        """Check for collisions with entities"""
-        entities = self.rect.check_entity_collisions(level.super_mushrooms + level.enemies)
+        self.right_big_green_frames.append(
+            self.get_image(176, 192, 16, 32))  # Right standing [0]
+        self.right_big_green_frames.append(
+            self.get_image(81, 192, 16, 32))  # Right walking 1 [1]
+        self.right_big_green_frames.append(
+            self.get_image(97, 192, 15, 32))  # Right walking 2 [2]
+        self.right_big_green_frames.append(
+            self.get_image(113, 192, 15, 32))  # Right walking 3 [3]
+        self.right_big_green_frames.append(
+            self.get_image(144, 192, 16, 32))  # Right jump [4]
+        self.right_big_green_frames.append(
+            self.get_image(128, 192, 16, 32))  # Right skid [5]
+        self.right_big_green_frames.append(
+            self.get_image(336, 192, 16, 32))  # Right throwing [6]
+        self.right_big_green_frames.append(
+            self.get_image(160, 202, 16, 22))  # Right Crouching [7]
 
-        for entity in entities:
-            if entity.__class__.__name__ == 'Super_Mushroom' and entity.deployed:
-                self.mario_states.on_event('grow')
-                entity.collected = True
+        #Images for red big Mario#
 
-            if hasattr(entity, 'state_machine') and entity.state_machine.get_state() != 'Knocked_State':
-                if entity.state_machine.get_state() == 'Shell_State':
-                    if self.pos.x + self.rect.w < entity.pos.x + entity.rect.w / 2:
-                        entity.vel.x = 0.5
-                    elif self.pos.x + self.rect.w > entity.pos.x + entity.rect.w / 2:
-                        entity.vel.x = -0.5
-                    elif self.vel.x < 0:
-                        entity.vel.x = -0.5
-                    elif self.vel.x > 0:
-                        entity.vel.x = 0.5
-                    else:
-                        entity.vel.x = random.choice([-0.5, 0.5])
-                    entity.state_machine.on_event('move shell')
+        self.right_big_red_frames.append(
+            self.get_image(176, 240, 16, 32))  # Right standing [0]
+        self.right_big_red_frames.append(
+            self.get_image(81, 240, 16, 32))  # Right walking 1 [1]
+        self.right_big_red_frames.append(
+            self.get_image(97, 240, 15, 32))  # Right walking 2 [2]
+        self.right_big_red_frames.append(
+            self.get_image(113, 240, 15, 32))  # Right walking 3 [3]
+        self.right_big_red_frames.append(
+            self.get_image(144, 240, 16, 32))  # Right jump [4]
+        self.right_big_red_frames.append(
+            self.get_image(128, 240, 16, 32))  # Right skid [5]
+        self.right_big_red_frames.append(
+            self.get_image(336, 240, 16, 32))  # Right throwing [6]
+        self.right_big_red_frames.append(
+            self.get_image(160, 250, 16, 22))  # Right crouching [7]
 
-                elif self.pos.y + self.rect.h - self.vel.y * c.delta_time < entity.pos.y:
-                    if entity.state_machine.get_state() == 'Run_State':
-                        self.vel.y = c.STOMP_VEL
-                        self.pos.y = entity.pos.y - self.rect.h
-                        entity.state_machine.on_event('squish')
-                        return
+        #Images for black big Mario#
+
+        self.right_big_black_frames.append(
+            self.get_image(176, 144, 16, 32))  # Right standing [0]
+        self.right_big_black_frames.append(
+            self.get_image(81, 144, 16, 32))  # Right walking 1 [1]
+        self.right_big_black_frames.append(
+            self.get_image(97, 144, 15, 32))  # Right walking 2 [2]
+        self.right_big_black_frames.append(
+            self.get_image(113, 144, 15, 32))  # Right walking 3 [3]
+        self.right_big_black_frames.append(
+            self.get_image(144, 144, 16, 32))  # Right jump [4]
+        self.right_big_black_frames.append(
+            self.get_image(128, 144, 16, 32))  # Right skid [5]
+        self.right_big_black_frames.append(
+            self.get_image(336, 144, 16, 32))  # Right throwing [6]
+        self.right_big_black_frames.append(
+            self.get_image(160, 154, 16, 22))  # Right Crouching [7]
+
+
+        #Images for Fire Mario#
+
+        self.right_fire_frames.append(
+            self.get_image(176, 48, 16, 32))  # Right standing [0]
+        self.right_fire_frames.append(
+            self.get_image(81, 48, 16, 32))  # Right walking 1 [1]
+        self.right_fire_frames.append(
+            self.get_image(97, 48, 15, 32))  # Right walking 2 [2]
+        self.right_fire_frames.append(
+            self.get_image(113, 48, 15, 32))  # Right walking 3 [3]
+        self.right_fire_frames.append(
+            self.get_image(144, 48, 16, 32))  # Right jump [4]
+        self.right_fire_frames.append(
+            self.get_image(128, 48, 16, 32))  # Right skid [5]
+        self.right_fire_frames.append(
+            self.get_image(336, 48, 16, 32))  # Right throwing [6]
+        self.right_fire_frames.append(
+            self.get_image(160, 58, 16, 22))  # Right crouching [7]
+        self.right_fire_frames.append(
+            self.get_image(0, 0, 0, 0))  # Place holder [8]
+        self.right_fire_frames.append(
+            self.get_image(193, 50, 16, 29))  # Frame 1 of flag pole slide [9]
+        self.right_fire_frames.append(
+            self.get_image(209, 50, 16, 29))  # Frame 2 of flag pole slide [10]
+
+
+        #The left image frames are numbered the same as the right
+        #frames but are simply reversed.
+
+        for frame in self.right_small_normal_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_small_normal_frames.append(new_image)
+
+        for frame in self.right_small_green_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_small_green_frames.append(new_image)
+
+        for frame in self.right_small_red_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_small_red_frames.append(new_image)
+
+        for frame in self.right_small_black_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_small_black_frames.append(new_image)
+
+        for frame in self.right_big_normal_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_big_normal_frames.append(new_image)
+
+        for frame in self.right_big_green_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_big_green_frames.append(new_image)
+
+        for frame in self.right_big_red_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_big_red_frames.append(new_image)
+
+        for frame in self.right_big_black_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_big_black_frames.append(new_image)
+
+        for frame in self.right_fire_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_fire_frames.append(new_image)
+
+
+        self.normal_small_frames = [self.right_small_normal_frames,
+                              self.left_small_normal_frames]
+
+        self.green_small_frames = [self.right_small_green_frames,
+                             self.left_small_green_frames]
+
+        self.red_small_frames = [self.right_small_red_frames,
+                           self.left_small_red_frames]
+
+        self.black_small_frames = [self.right_small_black_frames,
+                             self.left_small_black_frames]
+
+        self.invincible_small_frames_list = [self.normal_small_frames,
+                                          self.green_small_frames,
+                                          self.red_small_frames,
+                                          self.black_small_frames]
+
+        self.normal_big_frames = [self.right_big_normal_frames,
+                                  self.left_big_normal_frames]
+
+        self.green_big_frames = [self.right_big_green_frames,
+                                 self.left_big_green_frames]
+
+        self.red_big_frames = [self.right_big_red_frames,
+                               self.left_big_red_frames]
+
+        self.black_big_frames = [self.right_big_black_frames,
+                                 self.left_big_black_frames]
+
+        self.fire_frames = [self.right_fire_frames,
+                            self.left_fire_frames]
+
+        self.invincible_big_frames_list = [self.normal_big_frames,
+                                           self.green_big_frames,
+                                           self.red_big_frames,
+                                           self.black_big_frames]
+
+        self.all_images = [self.right_big_normal_frames,
+                           self.right_big_black_frames,
+                           self.right_big_red_frames,
+                           self.right_big_green_frames,
+                           self.right_small_normal_frames,
+                           self.right_small_green_frames,
+                           self.right_small_red_frames,
+                           self.right_small_black_frames,
+                           self.left_big_normal_frames,
+                           self.left_big_black_frames,
+                           self.left_big_red_frames,
+                           self.left_big_green_frames,
+                           self.left_small_normal_frames,
+                           self.left_small_red_frames,
+                           self.left_small_green_frames,
+                           self.left_small_black_frames]
+
+
+        self.right_frames = self.normal_small_frames[0]
+        self.left_frames = self.normal_small_frames[1]
+
+
+    def get_image(self, x, y, width, height):
+        """Extracts image from sprite sheet"""
+        image = pg.Surface([width, height])
+        rect = image.get_rect()
+
+        image.blit(self.sprite_sheet, (0, 0), (x, y, width, height))
+        image.set_colorkey(c.BLACK)
+        image = pg.transform.scale(image,
+                                   (int(rect.width*c.SIZE_MULTIPLIER),
+                                    int(rect.height*c.SIZE_MULTIPLIER)))
+        return image
+
+
+    def update(self, keys, game_info, fire_group):
+        """Updates Mario's states and animations once per frame"""
+        self.current_time = game_info[c.CURRENT_TIME]
+        self.handle_state(keys, fire_group)
+        self.check_for_special_state()
+        self.animation()
+
+
+    def handle_state(self, keys, fire_group):
+        """Determines Mario's behavior based on his state"""
+        if self.state == c.STAND:
+            self.standing(keys, fire_group)
+        elif self.state == c.WALK:
+            self.walking(keys, fire_group)
+        elif self.state == c.JUMP:
+            self.jumping(keys, fire_group)
+        elif self.state == c.FALL:
+            self.falling(keys, fire_group)
+        elif self.state == c.DEATH_JUMP:
+            self.jumping_to_death()
+        elif self.state == c.SMALL_TO_BIG:
+            self.changing_to_big()
+        elif self.state == c.BIG_TO_FIRE:
+            self.changing_to_fire()
+        elif self.state == c.BIG_TO_SMALL:
+            self.changing_to_small()
+        elif self.state == c.FLAGPOLE:
+            self.flag_pole_sliding()
+        elif self.state == c.BOTTOM_OF_POLE:
+            self.sitting_at_bottom_of_pole()
+        elif self.state == c.WALKING_TO_CASTLE:
+            self.walking_to_castle()
+        elif self.state == c.END_OF_LEVEL_FALL:
+            self.falling_at_end_of_level()
+
+
+    def standing(self, keys, fire_group):
+        """This function is called if Mario is standing still"""
+        self.check_to_allow_jump(keys)
+        self.check_to_allow_fireball(keys)
+        
+        self.frame_index = 0
+        self.x_vel = 0
+        self.y_vel = 0
+
+        if keys[tools.keybinding['action']]:
+            if self.fire and self.allow_fireball:
+                self.shoot_fireball(fire_group)
+
+        if keys[tools.keybinding['down']]:
+            self.crouching = True
+
+        if keys[tools.keybinding['left']]:
+            self.facing_right = False
+            self.get_out_of_crouch()
+            self.state = c.WALK
+        elif keys[tools.keybinding['right']]:
+            self.facing_right = True
+            self.get_out_of_crouch()
+            self.state = c.WALK
+        elif keys[tools.keybinding['jump']]:
+            if self.allow_jump:
+                if self.big:
+                    setup.SFX['big_jump'].play()
                 else:
-                    if entity.state_machine.get_state() != 'Shell_State' and entity.can_kill:
-                        self.mario_states.on_event('shrink')
+                    setup.SFX['small_jump'].play()
+                self.state = c.JUMP
+                self.y_vel = c.JUMP_VEL
+        else:
+            self.state = c.STAND
 
-    def interact_with_tile(self, tile):
-        """Interact with tile based on current mario state"""
-        if self.current_mario_state == 'Small_Mario':
-            tile.state_machine.on_event('bounce')
-            if tile.__class__.__name__ == 'Brick':
-                sounds.bump.play()
-        elif self.current_mario_state == 'Big_Mario':
-            tile.state_machine.on_event('break')
-            if tile.__class__.__name__ == 'Question':
-                tile.state_machine.on_event('bounce')
+        if not keys[tools.keybinding['down']]:
+            self.get_out_of_crouch()
 
-    class Animation():
-        """Contains specific animation variables and functions for this class"""
-        def __init__(self):
-            self.current_sprite = sprites.SMALL_MARIO_IDLE
 
-            self.mario_size = 'Small_Mario'
-            self.anim_frame = 0
-            self.anim_timer = c.INITIAL_TIMER_VALUE
-            self.invincible_timer = 0
+    def get_out_of_crouch(self):
+        """Get out of crouch"""
+        bottom = self.rect.bottom
+        left = self.rect.x
+        if self.facing_right:
+            self.image = self.right_frames[0]
+        else:
+            self.image = self.left_frames[0]
+        self.rect = self.image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.x = left
+        self.crouching = False
 
-            self.start_height = None
-            self.new_y = self.start_height
 
-            self.grow_frames = [0, 1, 0, 1, 2, 0, 1, 2]
-            self.shrink_frames = [0, 1, 0, 1, 2, 1, 2, 1]
-            self.run_frames = [0, 1, 2, 1]
-            self.start_sprite_height = 0
+    def check_to_allow_jump(self, keys):
+        """Check to allow Mario to jump"""
+        if not keys[tools.keybinding['jump']]:
+            self.allow_jump = True
 
-        def reset_anim_vars(self):
-            """Reset animation variables"""
-            self.anim_frame = 0
-            self.anim_timer = c.INITIAL_TIMER_VALUE
 
-        def grow_anim(self):
-            """Animation when growing"""
-            self.current_sprite = sprites.GROW_SPRITES[self.grow_frames[self.anim_frame]]
-            self.anim_timer += c.delta_time
-            if self.anim_timer > 6 * c.delta_time:
-                self.anim_frame += 1
-                self.anim_timer = 0
-            self.new_y = self.start_height - (self.current_sprite[3] - 48)
+    def check_to_allow_fireball(self, keys):
+        """Check to allow the shooting of a fireball"""
+        if not keys[tools.keybinding['action']]:
+            self.allow_fireball = True
 
-        def run_anim(self):
-            """Animation when running"""
-            if self.mario_size == 'Small_Mario':
-                self.current_sprite = sprites.SMALL_MARIO_RUN[self.run_frames[self.anim_frame % 4]]
+
+    def shoot_fireball(self, powerup_group):
+        """Shoots fireball, allowing no more than two to exist at once"""
+        setup.SFX['fireball'].play()
+        self.fireball_count = self.count_number_of_fireballs(powerup_group)
+
+        if (self.current_time - self.last_fireball_time) > 200:
+            if self.fireball_count < 2:
+                self.allow_fireball = False
+                powerup_group.add(
+                    powerups.FireBall(self.rect.right, self.rect.y, self.facing_right))
+                self.last_fireball_time = self.current_time
+
+                self.frame_index = 6
+                if self.facing_right:
+                    self.image = self.right_frames[self.frame_index]
+                else:
+                    self.image = self.left_frames[self.frame_index]
+
+
+    def count_number_of_fireballs(self, powerup_group):
+        """Count number of fireballs that exist in the level"""
+        fireball_list = []
+
+        for powerup in powerup_group:
+            if powerup.name == c.FIREBALL:
+                fireball_list.append(powerup)
+
+        return len(fireball_list)
+
+
+    def walking(self, keys, fire_group):
+        """This function is called when Mario is in a walking state
+        It changes the frame, checks for holding down the run button,
+        checks for a jump, then adjusts the state if necessary"""
+
+        self.check_to_allow_jump(keys)
+        self.check_to_allow_fireball(keys)
+
+        if self.frame_index == 0:
+            self.frame_index += 1
+            self.walking_timer = self.current_time
+        else:
+            if (self.current_time - self.walking_timer >
+                    self.calculate_animation_speed()):
+                if self.frame_index < 3:
+                    self.frame_index += 1
+                else:
+                    self.frame_index = 1
+
+                self.walking_timer = self.current_time
+
+        if keys[tools.keybinding['action']]:
+            self.max_x_vel = c.MAX_RUN_SPEED
+            self.x_accel = c.RUN_ACCEL
+            if self.fire and self.allow_fireball:
+                self.shoot_fireball(fire_group)
+        else:
+            self.max_x_vel = c.MAX_WALK_SPEED
+            self.x_accel = c.WALK_ACCEL
+
+        if keys[tools.keybinding['jump']]:
+            if self.allow_jump:
+                if self.big:
+                    setup.SFX['big_jump'].play()
+                else:
+                    setup.SFX['small_jump'].play()
+                self.state = c.JUMP
+                if self.x_vel > 4.5 or self.x_vel < -4.5:
+                    self.y_vel = c.JUMP_VEL - .5
+                else:
+                    self.y_vel = c.JUMP_VEL
+
+
+        if keys[tools.keybinding['left']]:
+            self.get_out_of_crouch()
+            self.facing_right = False
+            if self.x_vel > 0:
+                self.frame_index = 5
+                self.x_accel = c.SMALL_TURNAROUND
             else:
-                self.current_sprite = sprites.BIG_MARIO_RUN[self.run_frames[self.anim_frame % 4]]
-            self.anim_timer += c.delta_time
-            if self.anim_timer > 6 * c.delta_time:
-                self.anim_frame += 1
-                self.anim_timer = 0
+                self.x_accel = c.WALK_ACCEL
 
-        def shrink_anim(self):
-            """Animation when shrinking"""
-            self.current_sprite = sprites.SHRINK_SPRITES[self.shrink_frames[self.anim_frame]]
-            self.anim_timer += c.delta_time
-            if self.anim_timer > 6 * c.delta_time:
-                self.anim_frame += 1
-                self.anim_timer = 0
-            self.new_y = self.start_height + (self.start_sprite_height - self.current_sprite[3])
+            if self.x_vel > (self.max_x_vel * -1):
+                self.x_vel -= self.x_accel
+                if self.x_vel > -0.5:
+                    self.x_vel = -0.5
+            elif self.x_vel < (self.max_x_vel * -1):
+                self.x_vel += self.x_accel
 
-        def win_anim_on_flag(self):
-            """Animation when sliding down flag pole"""
-            if self.mario_size == 'Small_Mario':
-                self.current_sprite = sprites.WIN_SPRITES_SMALL[self.anim_frame % 2]
+        elif keys[tools.keybinding['right']]:
+            self.get_out_of_crouch()
+            self.facing_right = True
+            if self.x_vel < 0:
+                self.frame_index = 5
+                self.x_accel = c.SMALL_TURNAROUND
             else:
-                self.current_sprite = sprites.WIN_SPRITES_BIG[self.anim_frame % 2]
-            self.anim_timer += c.delta_time
-            if self.anim_timer > 8 * c.delta_time:
-                self.anim_frame += 1
-                self.anim_timer = 0
+                self.x_accel = c.WALK_ACCEL
 
-    class Idle_State(State):
-        """State when on the ground and not moving"""
-        def on_enter(self, owner_object):
-            if owner_object.animation.mario_size == 'Small_Mario':
-                owner_object.animation.current_sprite = sprites.SMALL_MARIO_IDLE
+            if self.x_vel < self.max_x_vel:
+                self.x_vel += self.x_accel
+                if self.x_vel < 0.5:
+                    self.x_vel = 0.5
+            elif self.x_vel > self.max_x_vel:
+                self.x_vel -= self.x_accel
+
+        else:
+            if self.facing_right:
+                if self.x_vel > 0:
+                    self.x_vel -= self.x_accel
+                else:
+                    self.x_vel = 0
+                    self.state = c.STAND
             else:
-                owner_object.animation.current_sprite = sprites.BIG_MARIO_IDLE
-        
-        def on_event(self, event):
-            if event == 'jump':
-                return Mario.Jump_State()
-            elif event == 'move':
-                return Mario.Move_State()
-            elif event == 'decel':
-                return Mario.Decel_State()
-            elif event == 'brake':
-                return Mario.Brake_State()
-            elif event == 'crouch':
-                return Mario.Crouch_State()
-            return self
+                if self.x_vel < 0:
+                    self.x_vel += self.x_accel
+                else:
+                    self.x_vel = 0
+                    self.state = c.STAND
 
-    class Jump_State(State):
-        """State when jumping when spacebar input affects velocity"""
-        def on_event(self, event):
-            if event == 'no jump':
-                return Mario.No_Jump_State()
-            return self
 
-        def on_enter(self, owner_object):
-            if owner_object.current_mario_state == 'Small_Mario':
-                sounds.small_jump.play()
+    def calculate_animation_speed(self):
+        """Used to make walking animation speed be in relation to
+        Mario's x-vel"""
+        if self.x_vel == 0:
+            animation_speed = 130
+        elif self.x_vel > 0:
+            animation_speed = 130 - (self.x_vel * (13))
+        else:
+            animation_speed = 130 - (self.x_vel * (13) * -1)
+
+        return animation_speed
+
+
+    def jumping(self, keys, fire_group):
+        """Called when Mario is in a JUMP state."""
+        self.allow_jump = False
+        self.frame_index = 4
+        self.gravity = c.JUMP_GRAVITY
+        self.y_vel += self.gravity
+        self.check_to_allow_fireball(keys)
+
+        if self.y_vel >= 0 and self.y_vel < self.max_y_vel:
+            self.gravity = c.GRAVITY
+            self.state = c.FALL
+
+        if keys[tools.keybinding['left']]:
+            if self.x_vel > (self.max_x_vel * - 1):
+                self.x_vel -= self.x_accel
+
+        elif keys[tools.keybinding['right']]:
+            if self.x_vel < self.max_x_vel:
+                self.x_vel += self.x_accel
+
+        if not keys[tools.keybinding['jump']]:
+            self.gravity = c.GRAVITY
+            self.state = c.FALL
+
+        if keys[tools.keybinding['action']]:
+            if self.fire and self.allow_fireball:
+                self.shoot_fireball(fire_group)
+
+
+    def falling(self, keys, fire_group):
+        """Called when Mario is in a FALL state"""
+        self.check_to_allow_fireball(keys)
+        if self.y_vel < c.MAX_Y_VEL:
+            self.y_vel += self.gravity
+
+        if keys[tools.keybinding['left']]:
+            if self.x_vel > (self.max_x_vel * - 1):
+                self.x_vel -= self.x_accel
+
+        elif keys[tools.keybinding['right']]:
+            if self.x_vel < self.max_x_vel:
+                self.x_vel += self.x_accel
+
+        if keys[tools.keybinding['action']]:
+            if self.fire and self.allow_fireball:
+                self.shoot_fireball(fire_group)
+
+
+    def jumping_to_death(self):
+        """Called when Mario is in a DEATH_JUMP state"""
+        if self.death_timer == 0:
+            self.death_timer = self.current_time
+        elif (self.current_time - self.death_timer) > 500:
+            self.rect.y += self.y_vel
+            self.y_vel += self.gravity
+
+
+    def start_death_jump(self, game_info):
+        """Used to put Mario in a DEATH_JUMP state"""
+        self.dead = True
+        game_info[c.MARIO_DEAD] = True
+        self.y_vel = -11
+        self.gravity = .5
+        self.frame_index = 6
+        self.image = self.right_frames[self.frame_index]
+        self.state = c.DEATH_JUMP
+        self.in_transition_state = True
+
+
+    def changing_to_big(self):
+        """Changes Mario's image attribute based on time while
+        transitioning to big"""
+        self.in_transition_state = True
+
+        if self.transition_timer == 0:
+            self.transition_timer = self.current_time
+        elif self.timer_between_these_two_times(135, 200):
+            self.set_mario_to_middle_image()
+        elif self.timer_between_these_two_times(200, 365):
+            self.set_mario_to_small_image()
+        elif self.timer_between_these_two_times(365, 430):
+            self.set_mario_to_middle_image()
+        elif self.timer_between_these_two_times(430, 495):
+            self.set_mario_to_small_image()
+        elif self.timer_between_these_two_times(495, 560):
+            self.set_mario_to_middle_image()
+        elif self.timer_between_these_two_times(560, 625):
+            self.set_mario_to_big_image()
+        elif self.timer_between_these_two_times(625, 690):
+            self.set_mario_to_small_image()
+        elif self.timer_between_these_two_times(690, 755):
+            self.set_mario_to_middle_image()
+        elif self.timer_between_these_two_times(755, 820):
+            self.set_mario_to_big_image()
+        elif self.timer_between_these_two_times(820, 885):
+            self.set_mario_to_small_image()
+        elif self.timer_between_these_two_times(885, 950):
+            self.set_mario_to_big_image()
+            self.state = c.WALK
+            self.in_transition_state = False
+            self.transition_timer = 0
+            self.become_big()
+
+
+    def timer_between_these_two_times(self,start_time, end_time):
+        """Checks if the timer is at the right time for the action. Reduces
+        the ugly code."""
+        if (self.current_time - self.transition_timer) >= start_time\
+            and (self.current_time - self.transition_timer) < end_time:
+            return True
+
+
+    def set_mario_to_middle_image(self):
+        """During a change from small to big, sets mario's image to the
+        transition/middle size"""
+        if self.facing_right:
+            self.image = self.normal_small_frames[0][7]
+        else:
+            self.image = self.normal_small_frames[1][7]
+        bottom = self.rect.bottom
+        centerx = self.rect.centerx
+        self.rect = self.image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.centerx = centerx
+
+
+    def set_mario_to_small_image(self):
+        """During a change from small to big, sets mario's image to small"""
+        if self.facing_right:
+            self.image = self.normal_small_frames[0][0]
+        else:
+            self.image = self.normal_small_frames[1][0]
+        bottom = self.rect.bottom
+        centerx = self.rect.centerx
+        self.rect = self.image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.centerx = centerx
+
+
+    def set_mario_to_big_image(self):
+        """During a change from small to big, sets mario's image to big"""
+        if self.facing_right:
+            self.image = self.normal_big_frames[0][0]
+        else:
+            self.image = self.normal_big_frames[1][0]
+        bottom = self.rect.bottom
+        centerx = self.rect.centerx
+        self.rect = self.image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.centerx = centerx
+
+
+    def become_big(self):
+        self.big = True
+        self.right_frames = self.right_big_normal_frames
+        self.left_frames = self.left_big_normal_frames
+        bottom = self.rect.bottom
+        left = self.rect.x
+        image = self.right_frames[0]
+        self.rect = image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.x = left
+
+
+    def changing_to_fire(self):
+        """Called when Mario is in a BIG_TO_FIRE state (i.e. when
+        he obtains a fire flower"""
+        self.in_transition_state = True
+
+        if self.facing_right:
+            frames = [self.right_fire_frames[3],
+                      self.right_big_green_frames[3],
+                      self.right_big_red_frames[3],
+                      self.right_big_black_frames[3]]
+        else:
+            frames = [self.left_fire_frames[3],
+                      self.left_big_green_frames[3],
+                      self.left_big_red_frames[3],
+                      self.left_big_black_frames[3]]
+
+        if self.fire_transition_timer == 0:
+            self.fire_transition_timer = self.current_time
+        elif (self.current_time - self.fire_transition_timer) > 65 and (self.current_time - self.fire_transition_timer) < 130:
+            self.image = frames[0]
+        elif (self.current_time - self.fire_transition_timer) < 195:
+            self.image = frames[1]
+        elif (self.current_time - self.fire_transition_timer) < 260:
+            self.image = frames[2]
+        elif (self.current_time - self.fire_transition_timer) < 325:
+            self.image = frames[3]
+        elif (self.current_time - self.fire_transition_timer) < 390:
+            self.image = frames[0]
+        elif (self.current_time - self.fire_transition_timer) < 455:
+            self.image = frames[1]
+        elif (self.current_time - self.fire_transition_timer) < 520:
+            self.image = frames[2]
+        elif (self.current_time - self.fire_transition_timer) < 585:
+            self.image = frames[3]
+        elif (self.current_time - self.fire_transition_timer) < 650:
+            self.image = frames[0]
+        elif (self.current_time - self.fire_transition_timer) < 715:
+            self.image = frames[1]
+        elif (self.current_time - self.fire_transition_timer) < 780:
+            self.image = frames[2]
+        elif (self.current_time - self.fire_transition_timer) < 845:
+            self.image = frames[3]
+        elif (self.current_time - self.fire_transition_timer) < 910:
+            self.image = frames[0]
+        elif (self.current_time - self.fire_transition_timer) < 975:
+            self.image = frames[1]
+        elif (self.current_time - self.fire_transition_timer) < 1040:
+            self.image = frames[2]
+            self.fire = True
+            self.in_transition_state = False
+            self.state = c.WALK
+            self.transition_timer = 0
+
+
+    def changing_to_small(self):
+        """Mario's state and animation when he shrinks from big to small
+        after colliding with an enemy"""
+        self.in_transition_state = True
+        self.hurt_invincible = True
+        self.state = c.BIG_TO_SMALL
+
+        if self.facing_right:
+            frames = [self.right_big_normal_frames[4],
+                      self.right_big_normal_frames[8],
+                      self.right_small_normal_frames[8]
+                      ]
+        else:
+            frames = [self.left_big_normal_frames[4],
+                      self.left_big_normal_frames[8],
+                      self.left_small_normal_frames[8]
+                     ]
+
+        if self.transition_timer == 0:
+            self.transition_timer = self.current_time
+        elif (self.current_time - self.transition_timer) < 265:
+            self.image = frames[0]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 330:
+            self.image = frames[1]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 395:
+            self.image = frames[2]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 460:
+            self.image = frames[1]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 525:
+            self.image = frames[2]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 590:
+            self.image = frames[1]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 655:
+            self.image = frames[2]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 720:
+            self.image = frames[1]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 785:
+            self.image = frames[2]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 850:
+            self.image = frames[1]
+            self.hurt_invincible_check()
+            self.adjust_rect()
+        elif (self.current_time - self.transition_timer) < 915:
+            self.image = frames[2]
+            self.adjust_rect()
+            self.in_transition_state = False
+            self.state = c.WALK
+            self.big = False
+            self.transition_timer = 0
+            self.hurt_invisible_timer = 0
+            self.become_small()
+
+
+    def adjust_rect(self):
+        """Makes sure new Rect has the same bottom and left
+        location as previous Rect"""
+        x = self.rect.x
+        bottom = self.rect.bottom
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.bottom = bottom
+
+
+    def become_small(self):
+        self.big = False
+        self.right_frames = self.right_small_normal_frames
+        self.left_frames = self.left_small_normal_frames
+        bottom = self.rect.bottom
+        left = self.rect.x
+        image = self.right_frames[0]
+        self.rect = image.get_rect()
+        self.rect.bottom = bottom
+        self.rect.x = left
+
+
+    def flag_pole_sliding(self):
+        """State where Mario is sliding down the flag pole"""
+        self.state = c.FLAGPOLE
+        self.in_transition_state = True
+        self.x_vel = 0
+        self.y_vel = 0
+
+        if self.flag_pole_timer == 0:
+            self.flag_pole_timer = self.current_time
+        elif self.rect.bottom < 493:
+            if (self.current_time - self.flag_pole_timer) < 65:
+                self.image = self.right_frames[9]
+            elif (self.current_time - self.flag_pole_timer) < 130:
+                self.image = self.right_frames[10]
+            elif (self.current_time - self.flag_pole_timer) >= 130:
+                self.flag_pole_timer = self.current_time
+
+            self.rect.right = self.flag_pole_right
+            self.y_vel = 5
+            self.rect.y += self.y_vel
+
+            if self.rect.bottom >= 488:
+                self.flag_pole_timer = self.current_time
+
+        elif self.rect.bottom >= 493:
+            self.image = self.right_frames[10]
+
+
+    def sitting_at_bottom_of_pole(self):
+        """State when mario is at the bottom of the flag pole"""
+        if self.flag_pole_timer == 0:
+            self.flag_pole_timer = self.current_time
+            self.image = self.left_frames[10]
+        elif (self.current_time - self.flag_pole_timer) < 210:
+            self.image = self.left_frames[10]
+        else:
+            self.in_transition_state = False
+            if self.rect.bottom < 485:
+                self.state = c.END_OF_LEVEL_FALL
             else:
-                sounds.big_jump.play()
-        
-        def update(self, owner_object):
-            owner_object.vel.y = c.JUMP_VELOCITY
-            if (not owner_object.spacebar or 
-                owner_object.pos.y < owner_object.start_height - c.MAX_JUMP_HEIGHT):
-                owner_object.action_states.on_event('no jump')
-        
-    class No_Jump_State(State):
-        """State when in mid air but spacebar input does not affect velocity"""
-        def on_event(self, event):
-            if event == 'idle':
-                return Mario.Idle_State()
-            elif event == 'decel':
-                return Mario.Decel_State()
-            elif event == 'brake':
-                return Mario.Brake_State()
-            elif event == 'move':
-                return Mario.Move_State()
-            return self
+                self.state = c.WALKING_TO_CASTLE
 
-    class Move_State(State):
-        """State when moving on the ground and not breaking or decelerating"""
-        def on_event(self, event):
-            if event == 'decel':
-                return Mario.Decel_State()
-            elif event == 'brake':
-                return Mario.Brake_State()
-            elif event == 'no jump':
-                return Mario.No_Jump_State()
-            elif event == 'jump':
-                return Mario.Jump_State()
-            elif event == 'crouch':
-                return Mario.Crouch_State()
-            elif event == 'idle':
-                return Mario.Idle_State()
-            return self
 
-        def update(self, owner_object):
-            if owner_object.pressed_left:
-                c.ACCELERATION = -c.MARIO_ACCELERATION
-            elif owner_object.pressed_right:
-                c.ACCELERATION = c.MARIO_ACCELERATION
-            owner_object.animation.run_anim()
+    def set_state_to_bottom_of_pole(self):
+        """Sets Mario to the BOTTOM_OF_POLE state"""
+        self.image = self.left_frames[9]
+        right = self.rect.right
+        #self.rect.bottom = 493
+        self.rect.x = right
+        if self.big:
+            self.rect.x -= 10
+        self.flag_pole_timer = 0
+        self.state = c.BOTTOM_OF_POLE
 
-    class Brake_State(State):
-        """State when input is opposite velocity"""
-        def on_event(self, event):
-            if event == 'move':
-                return Mario.Move_State()
-            elif event == 'decel':
-                return Mario.Decel_State()
-            elif event == 'no jump':
-                return Mario.No_Jump_State()
-            elif event == 'jump':
-                return Mario.Jump_State()
-            elif event == 'crouch':
-                return Mario.Crouch_State()
-            elif event == 'idle':
-                return Mario.Idle_State()
-            return self
 
-        def on_enter(self, owner_object):
-            c.ACCELERATION = 0
-            c.FRICTION = c.BRAKE_FRICTION
-            if owner_object.animation.mario_size == 'Small_Mario':
-                owner_object.animation.current_sprite = sprites.SMALL_MARIO_BRAKE
+    def walking_to_castle(self):
+        """State when Mario walks to the castle to end the level"""
+        self.max_x_vel = 5
+        self.x_accel = c.WALK_ACCEL
+
+        if self.x_vel < self.max_x_vel:
+            self.x_vel += self.x_accel
+
+        if (self.walking_timer == 0 or (self.current_time - self.walking_timer) > 200):
+            self.walking_timer = self.current_time
+
+        elif (self.current_time - self.walking_timer) > \
+                self.calculate_animation_speed():
+            if self.frame_index < 3:
+                self.frame_index += 1
             else:
-                owner_object.animation.current_sprite = sprites.BIG_MARIO_BRAKE
+                self.frame_index = 1
+            self.walking_timer = self.current_time
 
-    class Decel_State(State):
-        """State when moving when there is no longer any input"""
-        def on_event(self, event):
-            if event == 'idle':
-                return Mario.Idle_State()
-            elif event == 'brake':
-                return Mario.Brake_State()
-            elif event == 'move':
-                return Mario.Move_State()
-            elif event == 'no jump':
-                return Mario.No_Jump_State()
-            elif event == 'jump':
-                return Mario.Jump_State()
-            elif event == 'crouch':
-                return Mario.Crouch_State()
-            return self
 
-        def on_enter(self, owner_object):
-            c.ACCELERATION = 0
-            c.FRICTION = c.DECEL_FRICTION
-
-        def update(self, owner_object):
-            owner_object.animation.run_anim()
-
-    class Invincible_Mario(State):
-        """State after shrinking when mario is invincible"""
-        def __init__(self):
-            self.invincible_timer = 0
-            self.blink_timer = 0
-
-        def on_event(self, event):
-            if event == 'small mario':
-                return Mario.Small_Mario()
-            return self
-
-        def update(self, owner_object):
-            self.invincible_timer += c.delta_time
-            if self.invincible_timer > 40 * c.delta_time:
-                owner_object.mario_states.on_event('small mario')
-
-            self.blink_timer += c.delta_time
-            if self.blink_timer > 7 * c.delta_time:
-                owner_object.animation.current_sprite = sprites.EMPTY_SPRITE
-                if self.blink_timer > 14 * c.delta_time:
-                    self.blink_timer = 0
-
-        def on_exit(self, owner_object):
-            owner_object.animation.reset_anim_vars()
-
-    class Small_Mario(State):
-        """State when mario is small"""
-        def on_event(self, event):
-            if event == 'grow':
-                return Mario.Grow_Mario()
-            elif event == 'shrink':
-                return Mario.Dead_Mario()
-            elif event == 'win':
-                return Mario.Win_State()
-            elif event == 'dead':
-                return Mario.Dead_Mario()
-            return self
-        
-    class Grow_Mario(State):
-        """State when mario is growing"""
-        def on_event(self, event):
-            if event == 'big mario':
-                return Mario.Big_Mario()
-            if event == 'shrink':
-                return Mario.Shrink_Mario()
-            return self
-
-        def on_enter(self, owner_object):
-            owner_object.animation.start_height = owner_object.pos.y
-            owner_object.animation.reset_anim_vars()
-            owner_object.freeze_movement = True
-
-        def update(self, owner_object):
-            owner_object.animation.grow_anim()
-            owner_object.pos.y = owner_object.animation.new_y
-            if owner_object.animation.anim_frame > 7:
-                owner_object.mario_states.on_event('big mario')
-
-        def on_exit(self, owner_object):
-            owner_object.rect.h = 96
-            owner_object.animation.mario_size = 'Big_Mario'
-            owner_object.animation.reset_anim_vars()
-            owner_object.freeze_movement = False
-
-    class Big_Mario(State):
-        """State when mario is big"""
-        def on_event(self, event):
-            if event == 'shrink':
-                return Mario.Shrink_Mario()
-            elif event == 'dead':
-                return Mario.Dead_Mario()
-            elif event == 'win':
-                return Mario.Win_State()
-            return self
-
-    class Shrink_Mario(State):
-        """State when mario is shrinking"""
-        def on_event(self, event):
-            if event == 'invincible':
-                return Mario.Invincible_Mario()
-            if event == 'grow mario':
-                return Mario.Grow_Mario()
-            return self
-
-        def on_enter(self, owner_object):
-            owner_object.animation.reset_anim_vars()
-            owner_object.animation.start_height = owner_object.pos.y
-            owner_object.animation.start_sprite_height = owner_object.animation.current_sprite[3]
-            owner_object.freeze_movement = True
-            sounds.pipe.play()
-
-        def update(self, owner_object):
-            owner_object.animation.shrink_anim()
-            owner_object.pos.y = owner_object.animation.new_y
-            if owner_object.animation.anim_frame > 7:
-                owner_object.mario_states.on_event('invincible')
-
-        def on_exit(self, owner_object):
-            owner_object.rect.h = 48
-            owner_object.animation.mario_size = 'Small_Mario'
-            owner_object.animation.reset_anim_vars()
-            owner_object.freeze_movement = False
-
-    class Crouch_State(State):
-        """State when mario is crouching"""
-        def on_event(self, event):
-            if event == 'brake':
-                return Mario.Brake_State()
-            elif event == 'jump':
-                return Mario.Jump_State()
-            elif event == 'decel':
-                return Mario.Decel_State()
-            elif event == 'move':
-                return Mario.Move_State()
-            elif event == 'idle':
-                return Mario.Idle_State()
-            return self
-
-        def on_enter(self, owner_object):
-            c.FRICTION = c.BRAKE_FRICTION
-            c.ACCELERATION = 0
-            owner_object.animation.current_sprite = sprites.MARIO_CROUCH
-            owner_object.pos.y += 30
-            owner_object.rect.h = owner_object.animation.current_sprite[3]
-
-        def update(self, owner_object):
-            c.ACCELERATION = 0
-            if owner_object.vel.x == 0:
-                if owner_object.pressed_left:
-                    owner_object.flip_sprites = True
-                if owner_object.pressed_right:
-                    owner_object.flip_sprites = False
-
-        def on_exit(self, owner_object):
-            owner_object.pos.y -= 31
-            owner_object.start_height = owner_object.pos.y
-        
-    class Dead_Mario(State):
-        """State when mario is dead"""
-        def __init__(self):
-            self.death_timer = 0
-
-        def on_event(self, event):
-            return self
-
-        def on_enter(self, owner_object):
-            owner_object.animation.current_sprite = sprites.DEAD_MARIO
-            owner_object.vel.y = c.DEATH_VEL_Y
-            owner_object.vel.x = 0
-            owner_object.freeze_movement = True
-            owner_object.freeze_input = True
-            pg.mixer.music.stop()
-            pg.mixer.music.set_endevent(c.DEATH_SONG_END)
-            pg.mixer.music.load(sounds.death)
-            pg.mixer.music.play()
-
-        def update(self, owner_object):
-            self.death_timer += c.delta_time
-            if self.death_timer > 20 * c.delta_time:
-                accelerate(owner_object, 0, c.GRAVITY)
-                owner_object.pos += owner_object.vel * c.delta_time
-
-    class Win_State(State):
-        """State when mario wins, runs and manages events related to the final win animation"""
-        def __init__(self):
-            self.animation_step = 0
-            self.timer = 0
-
-        def on_event(self, event):
-            return self
-
-        def on_enter(self, owner_object):
-            owner_object.animation.reset_anim_vars()
-            owner_object.animation.start_height = owner_object.pos.y
-            owner_object.animation.new_y = owner_object.pos.y
-            owner_object.pos.x = c.flagpole.pos.x - 16
-            owner_object.freeze_movement = True
-            owner_object.freeze_input = True
-            owner_object.vel = Vector2()
-            pg.mixer.music.stop()
-            sounds.flagpole_sound.play()
-
-        def update(self, owner_object):
-
-            if self.animation_step == 0:
-                owner_object.animation.win_anim_on_flag()
-                owner_object.pos.y += 4
-                if owner_object.pos.y > c.flagpole.pos.y + c.flagpole.rect.h - 100:
-                    self.animation_step = 1
-
-            elif self.animation_step == 1:
-                owner_object.pos.x = c.flagpole.pos.x + 24
-                owner_object.flip_sprites = True
-                self.timer += c.delta_time
-                if self.timer > 20 * c.delta_time:
-                    owner_object.flip_sprites = False
-                    owner_object.freeze_movement = False
-                    owner_object.pos.x = c.flagpole.pos.x + c.flagpole.rect.w
-                    self.animation_step = 2
-                    pg.mixer.music.set_endevent(c.WIN_SONG_END)
-                    pg.mixer.music.load(sounds.stage_clear)
-                    pg.mixer.music.play()
-
-            elif self.animation_step == 2:
-                c.ACCELERATION = c.MARIO_ACCELERATION
-                owner_object.pressed_right = True
-                if owner_object.pos.x > c.LEVEL_END_X:
-                    owner_object.freeze_movement = True
-                    c.final_count_down = True
-
-            
-            
-            
+    def falling_at_end_of_level(self, *args):
+        """State when Mario is falling from the flag pole base"""
+        self.y_vel += c.GRAVITY
 
 
 
-        
+    def check_for_special_state(self):
+        """Determines if Mario is invincible, Fire Mario or recently hurt"""
+        self.check_if_invincible()
+        self.check_if_fire()
+        self.check_if_hurt_invincible()
+        self.check_if_crouching()
+
+
+    def check_if_invincible(self):
+        if self.invincible:
+            if ((self.current_time - self.invincible_start_timer) < 10000):
+                self.losing_invincibility = False
+                self.change_frame_list(30)
+            elif ((self.current_time - self.invincible_start_timer) < 12000):
+                self.losing_invincibility = True
+                self.change_frame_list(100)
+            else:
+                self.losing_invincibility = False
+                self.invincible = False
+        else:
+            if self.big:
+                self.right_frames = self.right_big_normal_frames
+                self.left_frames = self.left_big_normal_frames
+            else:
+                self.right_frames = self.invincible_small_frames_list[0][0]
+                self.left_frames = self.invincible_small_frames_list[0][1]
+
+
+    def change_frame_list(self, frame_switch_speed):
+        if (self.current_time - self.invincible_animation_timer) > frame_switch_speed:
+            if self.invincible_index < (len(self.invincible_small_frames_list) - 1):
+                self.invincible_index += 1
+            else:
+                self.invincible_index = 0
+
+            if self.big:
+                frames = self.invincible_big_frames_list[self.invincible_index]
+            else:
+                frames = self.invincible_small_frames_list[self.invincible_index]
+
+            self.right_frames = frames[0]
+            self.left_frames = frames[1]
+
+            self.invincible_animation_timer = self.current_time
+
+
+    def check_if_fire(self):
+        if self.fire and self.invincible == False:
+            self.right_frames = self.fire_frames[0]
+            self.left_frames = self.fire_frames[1]
+
+
+    def check_if_hurt_invincible(self):
+        """Check if Mario is still temporarily invincible after getting hurt"""
+        if self.hurt_invincible and self.state != c.BIG_TO_SMALL:
+            if self.hurt_invisible_timer2 == 0:
+                self.hurt_invisible_timer2 = self.current_time
+            elif (self.current_time - self.hurt_invisible_timer2) < 2000:
+                self.hurt_invincible_check()
+            else:
+                self.hurt_invincible = False
+                self.hurt_invisible_timer = 0
+                self.hurt_invisible_timer2 = 0
+                for frames in self.all_images:
+                    for image in frames:
+                        image.set_alpha(255)
+
+
+    def hurt_invincible_check(self):
+        """Makes Mario invincible on a fixed interval"""
+        if self.hurt_invisible_timer == 0:
+            self.hurt_invisible_timer = self.current_time
+        elif (self.current_time - self.hurt_invisible_timer) < 35:
+            self.image.set_alpha(0)
+        elif (self.current_time - self.hurt_invisible_timer) < 70:
+            self.image.set_alpha(255)
+            self.hurt_invisible_timer = self.current_time
+
+
+    def check_if_crouching(self):
+        """Checks if mario is crouching"""
+        if self.crouching and self.big:
+            bottom = self.rect.bottom
+            left = self.rect.x
+            if self.facing_right:
+                self.image = self.right_frames[7]
+            else:
+                self.image = self.left_frames[7]
+            self.rect = self.image.get_rect()
+            self.rect.bottom = bottom
+            self.rect.x = left
+
+
+    def animation(self):
+        """Adjusts Mario's image for animation"""
+        if self.state == c.DEATH_JUMP \
+            or self.state == c.SMALL_TO_BIG \
+            or self.state == c.BIG_TO_FIRE \
+            or self.state == c.BIG_TO_SMALL \
+            or self.state == c.FLAGPOLE \
+            or self.state == c.BOTTOM_OF_POLE \
+            or self.crouching:
+            pass
+        elif self.facing_right:
+            self.image = self.right_frames[self.frame_index]
+        else:
+            self.image = self.left_frames[self.frame_index]
+
+
+
+
+
+
+
+
+
+
+

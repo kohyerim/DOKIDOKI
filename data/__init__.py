@@ -1,1 +1,1 @@
-name = "data"
+__author__ = 'justinarmstrong'

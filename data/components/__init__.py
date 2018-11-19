@@ -1,1 +1,1 @@
-name = "components"
+__author__ = 'justinarmstrong'
