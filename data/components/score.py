@@ -12,7 +12,6 @@ class Digit(pg.sprite.Sprite):
         self.image = image
         self.rect = image.get_rect()
 
-
 class Score(object):
     """Scores that appear, float up, and disappear"""
     def __init__(self, x, y, score, flag_pole=False):

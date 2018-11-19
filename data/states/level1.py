@@ -527,7 +527,6 @@ class Level1(tools._State):
         enemy = pg.sprite.spritecollideany(self.mario, self.enemy_group)
         shell = pg.sprite.spritecollideany(self.mario, self.shell_group)
         powerup = pg.sprite.spritecollideany(self.mario, self.powerup_group)
-
         if coin_box:
             self.adjust_mario_for_x_collisions(coin_box)
 
@@ -1430,5 +1429,4 @@ class Level1(tools._State):
         self.overhead_info_display.draw(surface)
         for score in self.moving_score_list:
             score.draw(surface)
-
 

@@ -2,6 +2,8 @@ __author__ = 'justinarmstrong'
 
 import os
 import pygame as pg
+from . import constants as c
+from . import level
 
 keybinding = {
     'action':pg.K_s,
@@ -28,11 +30,13 @@ class Control(object):
         self.state_dict = {}
         self.state_name = None
         self.state = None
+        self.levels = level.Level()
 
     def setup_states(self, state_dict, start_state):
         self.state_dict = state_dict
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
+
 
     def update(self):
         self.current_time = pg.time.get_ticks()
@@ -41,6 +45,11 @@ class Control(object):
         elif self.state.done:
             self.flip_state()
         self.state.update(self.screen, self.keys, self.current_time)
+        self.levels.level_calculator(self.get_score())
+
+    def get_score(self):
+        return self.state.game_info[c.SCORE]
+
 
     def flip_state(self):
         previous, self.state_name = self.state_name, self.state.next
