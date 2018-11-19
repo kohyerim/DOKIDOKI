@@ -1,5 +1,5 @@
 DOKI DOKI
 =============
-<img width=100; height=100 src ='https://github.com/kohyerim/DOKIDOKI/blob/master/screenshot.png'></img>
+<img width=200; height=200 src ='https://github.com/kohyerim/DOKIDOKI/blob/master/screenshot.png'></img>
 
 building...
