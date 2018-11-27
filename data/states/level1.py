@@ -4,7 +4,7 @@ from __future__ import division
 import pygame as pg
 from .. import setup, tools
 from .. import constants as c
-from .. import game_sound
+#from .. import game_sound
 from .. components import mario
 from .. components import collider
 from .. components import bricks
@@ -23,6 +23,7 @@ class Level1(tools._State):
 
     def startup(self, current_time, persist):
         """Called when the State object is created"""
+        print("level1")
         self.game_info = persist
         self.persist = self.game_info
         self.game_info[c.CURRENT_TIME] = current_time
@@ -37,11 +38,11 @@ class Level1(tools._State):
 
         self.moving_score_list = []
         self.overhead_info_display = info.OverheadInfo(self.game_info, c.LEVEL)
-        self.sound_manager = game_sound.Sound(self.overhead_info_display)
+        #self.sound_manager = game_sound.Sound(self.overhead_info_display)
 
         self.setup_background()
         self.setup_ground()
-        self.setup_pipes()
+        #self.setup_pipes()
         self.setup_steps()
         self.setup_bricks()
         self.setup_coin_boxes()
@@ -83,20 +84,19 @@ class Level1(tools._State):
                                            ground_rect3,
                                            ground_rect4)
 
+    #def setup_pipes(self):
+    #    """Create collideable rects for all the pipes"""
 
-    def setup_pipes(self):
-        """Create collideable rects for all the pipes"""
+    #    pipe1 = collider.Collider(1202, 452, 83, 82)
+    #    pipe2 = collider.Collider(1631, 409, 83, 140)
+    #    pipe3 = collider.Collider(1973, 366, 83, 170)
+    #    pipe4 = collider.Collider(2445, 366, 83, 170)
+    #    pipe5 = collider.Collider(6989, 452, 83, 82)
+    #    pipe6 = collider.Collider(7675, 452, 83, 82)
 
-        pipe1 = collider.Collider(1202, 452, 83, 82)
-        pipe2 = collider.Collider(1631, 409, 83, 140)
-        pipe3 = collider.Collider(1973, 366, 83, 170)
-        pipe4 = collider.Collider(2445, 366, 83, 170)
-        pipe5 = collider.Collider(6989, 452, 83, 82)
-        pipe6 = collider.Collider(7675, 452, 83, 82)
-
-        self.pipe_group = pg.sprite.Group(pipe1, pipe2,
-                                          pipe3, pipe4,
-                                          pipe5, pipe6)
+    #    self.pipe_group = pg.sprite.Group(pipe1, pipe2,
+    #                                      pipe3, pipe4,
+    #                                      pipe5, pipe6)
 
 
     def setup_steps(self):
@@ -343,9 +343,9 @@ class Level1(tools._State):
         self.shell_group = pg.sprite.Group()
         self.enemy_group = pg.sprite.Group()
 
-        self.ground_step_pipe_group = pg.sprite.Group(self.ground_group,
-                                                      self.pipe_group,
-                                                      self.step_group)
+        self.ground_step_pipe_group = pg.sprite.Group(self.ground_group)
+                                                      #self.pipe_group,
+                                                      #self.step_group)
 
         self.mario_and_enemy_group = pg.sprite.Group(self.mario,
                                                      self.enemy_group)
@@ -357,7 +357,7 @@ class Level1(tools._State):
         self.handle_states(keys)
         self.check_if_time_out()
         self.blit_everything(surface)
-        self.sound_manager.update(self.game_info, self.mario)
+        #self.sound_manager.update(self.game_info, self.mario)
 
 
 
@@ -469,7 +469,7 @@ class Level1(tools._State):
                 self.mario.rect.y = mushroom_box.rect.bottom
                 self.mario.state = c.FALL
 
-            self.mario_and_enemy_group.add(self.enemy_group)
+            #self.mario_and_enemy_group.add(self.enemy_group)
 
 
     def create_flag_points(self):
@@ -1404,8 +1404,8 @@ class Level1(tools._State):
             self.flag_timer = self.current_time
         elif (self.current_time - self.flag_timer) > 2000:
             self.set_game_info_values()
-            self.next = c.GAME_OVER
-            self.sound_manager.stop_music()
+            self.next = c.LEVEL2 #change Stage
+            #self.sound_manager.stop_music()
             self.done = True
 
 

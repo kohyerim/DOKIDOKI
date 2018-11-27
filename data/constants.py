@@ -4,6 +4,9 @@ __author__ = 'justinarmstrong'
 ### Added Constants ##
 OVER = "over"
 CONTINUE = "continue"
+LEVEL2 = "level2"
+LEVEL3 = "level3"
+LEVEL4 = "level4"
 ######################
 
 SCREEN_HEIGHT = 600

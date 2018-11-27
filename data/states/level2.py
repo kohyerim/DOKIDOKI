@@ -17,12 +17,13 @@ from .. components import score
 from .. components import castle_flag
 
 """Stage of Level 2"""
-class Level1(tools._State):
+class Level2(tools._State):
     def __init__(self):
         tools._State.__init__(self)
 
     def startup(self, current_time, persist):
         """Called when the State object is created"""
+        print("Level2")
         self.game_info = persist
         self.persist = self.game_info
         self.game_info[c.CURRENT_TIME] = current_time
@@ -158,7 +159,7 @@ class Level1(tools._State):
         self.powerup_group = pg.sprite.Group()
         self.brick_pieces_group = pg.sprite.Group()
 
-        brick1  = bricks.Brick(858,  365)
+        brick1  = bricks.Brick(300,  365)
         brick2  = bricks.Brick(944,  365)
         brick3  = bricks.Brick(1030, 365)
         brick4  = bricks.Brick(3299, 365)
@@ -1404,7 +1405,7 @@ class Level1(tools._State):
             self.flag_timer = self.current_time
         elif (self.current_time - self.flag_timer) > 2000:
             self.set_game_info_values()
-            self.next = c.GAME_OVER
+            self.next = c.GAME_OVER # change Stage
             self.sound_manager.stop_music()
             self.done = True
 

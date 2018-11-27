@@ -26,6 +26,7 @@ class LoadScreen(tools._State):
         """Sets the next state"""
         return c.LEVEL1
 
+
     def set_overhead_info_state(self):
         """sets the state to send to the overhead info object"""
         return c.LOAD_SCREEN
