@@ -21,16 +21,13 @@ class LoadScreen(tools._State):
         self.overhead_info = info.OverheadInfo(self.game_info, info_state)
         self.sound_manager = game_sound.Sound(self.overhead_info)
 
-
     def set_next_state(self):
         """Sets the next state"""
         return c.LEVEL1
 
-
     def set_overhead_info_state(self):
         """sets the state to send to the overhead info object"""
         return c.LOAD_SCREEN
-
 
     def update(self, surface, keys, current_time):
         """Updates the loading screen"""
@@ -49,13 +46,10 @@ class LoadScreen(tools._State):
             self.done = True
 
 
-
-
 class GameOver(LoadScreen):
     """A loading screen with Game Over"""
     def __init__(self):
         super(GameOver, self).__init__()
-
 
     def set_next_state(self):
         """Sets next state"""

@@ -18,18 +18,18 @@ class Level:
             return c.OVER
         elif self.level == 1 and score >= 3000:
             self.level_up()
-            return c.CONTINUE
+            return c.LEVEL2
 
         elif self.level == 2 and 3000 < score < 7000:
             return c.OVER
 
         elif self.level == 2 and score >= 7000:
             self.level_up()
-            return c.CONTINUE
+            return c.LEVEL3
 
         elif self.level == 3 and 7000 < score < 14000:
             return c.OVER
 
         elif self.level == 3 and score >= 14000:
             self.level_up()
-            return c.CONTINUE
+            return c.LEVEL4
