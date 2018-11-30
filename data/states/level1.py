@@ -210,11 +210,11 @@ class Level1(tools._State):
 
     def setup_coin_boxes(self):
         """Creates all the coin boxes and puts them in a sprite group"""
-        coin_box1  = coin_box.Coin_box(685, 365, c.COIN, self.coin_group)
-        coin_box2  = coin_box.Coin_box(901, 365, c.MUSHROOM, self.powerup_group)
-        coin_box3  = coin_box.Coin_box(987, 365, c.COIN, self.coin_group)
-        coin_box4  = coin_box.Coin_box(943, 193, c.COIN, self.coin_group)
-        coin_box5  = coin_box.Coin_box(3342, 365, c.MUSHROOM, self.powerup_group)
+        coin_box1  = coin_box.Coin_box(685, 365, c.BOOK, self.coin_group)
+        coin_box2  = coin_box.Coin_box(901, 365, c.HOTSIX, self.powerup_group)
+        coin_box3  = coin_box.Coin_box(987, 365, c.MOUSE, self.coin_group)
+        coin_box4  = coin_box.Coin_box(943, 193, c.KEYBOARD, self.coin_group)
+        coin_box5  = coin_box.Coin_box(3342, 365, c.HOTSIX, self.powerup_group)
         coin_box6  = coin_box.Coin_box(4030, 193, c.COIN, self.coin_group)
         coin_box7  = coin_box.Coin_box(4544, 365, c.COIN, self.coin_group)
         coin_box8  = coin_box.Coin_box(4672, 365, c.COIN, self.coin_group)
@@ -743,10 +743,20 @@ class Level1(tools._State):
         """Mario collisions with coin boxes on the y-axis"""
         if self.mario.rect.y > coin_box.rect.y:
             if coin_box.state == c.RESTING:
-                if coin_box.contents == c.COIN:
+                if coin_box.contents == c.BOOK:
+                    self.game_info[c.SCORE] += 400
+                    coin_box.start_bump(self.moving_score_list)
+                    if coin_box.contents == c.BOOK:
+                        self.game_info[c.COIN_TOTAL] += 1
+                elif coin_box.contents == c.KEYBOARD:
+                    self.game_info[c.SCORE] += 300
+                    coin_box.start_bump(self.moving_score_list)
+                    if coin_box.contents == c.KEYBOARD:
+                        self.game_info[c.COIN_TOTAL] += 1
+                elif coin_box.contents == c.MOUSE:
                     self.game_info[c.SCORE] += 200
                     coin_box.start_bump(self.moving_score_list)
-                    if coin_box.contents == c.COIN:
+                    if coin_box.contents == c.MOUSE:
                         self.game_info[c.COIN_TOTAL] += 1
                 else:
                     coin_box.start_bump(self.moving_score_list)
