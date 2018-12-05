@@ -1287,7 +1287,7 @@ class Level3(tools._State):
             if self.mario.rect.x > 3670 \
                     and self.game_info[c.CAMERA_START_X] == 0:
                 self.game_info[c.CAMERA_START_X] = 3440
-            self.next = c.LOAD_SCREEN
+            self.next = c.LEVEL3
 
     def check_if_time_out(self):
         """Check if time has run down to 0"""
@@ -1334,8 +1334,10 @@ class Level3(tools._State):
             self.flag_timer = self.current_time
         elif (self.current_time - self.flag_timer) > 2000:
             self.set_game_info_values()
-            self.next = c.LEVEL2  # change Stage
-            # self.sound_manager.stop_music()
+            if self.game_info[c.SCORE] < 7000:
+                self.next = c.GAME_OVER
+            elif self.game_info[c.SCORE] >= 7000:
+                self.next = c.LEVEL4
             self.done = True
 
     def blit_everything(self, surface):

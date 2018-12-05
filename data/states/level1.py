@@ -23,7 +23,7 @@ class Level1(tools._State):
 
     def startup(self, current_time, persist):
         """Called when the State object is created"""
-        print("level1")
+        print("level1 in level1.py")
         self.game_info = persist
         self.persist = self.game_info
         self.game_info[c.CURRENT_TIME] = current_time
@@ -1417,7 +1417,7 @@ class Level1(tools._State):
             if self.game_info[c.SCORE] < 3000:
                 self.next = c.GAME_OVER
             elif self.game_info[c.SCORE] >= 3000:
-                self.next = c.LEVEL2 #change Stage
+                self.next = c.LEVEL2
             self.done = True
 
 

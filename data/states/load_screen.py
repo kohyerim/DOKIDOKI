@@ -102,10 +102,28 @@ class TimeOut(LoadScreen):
             self.done = True
 
 
+class Ending(LoadScreen):
+    def __init__(self):
+        super(Ending, self).__init__()
 
+    def set_next_state(self):
+        return c.ENDING
 
+    def update(self, surface, keys, current_time):
+        """Updates the loading screen"""
+        if (current_time - self.start_time) < 2400:
+            surface.fill(c.BLACK)
+            self.overhead_info.update(self.game_info)
+            self.overhead_info.draw(surface)
 
+        elif (current_time - self.start_time) < 2600:
+            surface.fill(c.BLACK)
 
+        elif (current_time - self.start_time) < 2635:
+            surface.fill((106, 150, 252))
+
+        else:
+            self.done = True
 
 
 

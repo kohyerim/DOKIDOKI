@@ -7,10 +7,11 @@ CONTINUE = "continue"
 LEVEL2 = "level2"
 LEVEL3 = "level3"
 LEVEL4 = "level4"
-BOOK="book"
-MOUSE="mouse"
-KEYBOARD="keyboard"
-HOTSIX="hotsix"
+BOOK = "book"
+MOUSE = "mouse"
+KEYBOARD = "keyboard"
+HOTSIX = "hotsix"
+ENDING = "ending"
 ######################
 
 SCREEN_HEIGHT = 600

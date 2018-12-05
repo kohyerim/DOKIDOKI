@@ -16,7 +16,8 @@ def main():
                   c.LEVEL1: level1.Level1(),
                   c.LEVEL2: level2.Level2(),
                   c.LEVEL3: level3.Level3(),
-                  c.LEVEL4: level4.Level4()}
+                  c.LEVEL4: level4.Level4(),
+                  c.ENDING: load_screen.Ending()}
     run_it.setup_states(state_dict, c.MAIN_MENU)
     run_it.main()
 
