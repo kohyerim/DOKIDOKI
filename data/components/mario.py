@@ -113,9 +113,9 @@ class Mario(pg.sprite.Sprite):
             self.right_small_normal_frames.append(self.test_image)
 
         for i in range(0, 6):
-            self.right_small_green_frames.append(pg.transform.scale(self.test_image, (200, 200)))
-            self.right_small_red_frames.append(pg.transform.scale(self.test_image, (200, 200)))
-            self.right_small_black_frames.append(pg.transform.scale(self.test_image, (200, 200)))
+            self.right_small_green_frames.append(pg.transform.scale(self.test_image, (150, 150)))
+            self.right_small_red_frames.append(pg.transform.scale(self.test_image, (150, 150)))
+            self.right_small_black_frames.append(pg.transform.scale(self.test_image, (150, 150)))
 
         ''''self.right_small_normal_frames.append(
             self.get_image(178, 32, 12, 16))  # Right [0]
@@ -185,7 +185,6 @@ class Mario(pg.sprite.Sprite):
             self.get_image(144, 176, 16, 16))  # Right jump [4]
         self.right_small_black_frames.append(
             self.get_image(130, 176, 14, 16))  # Right skid [5]'''
-
 
         #Images for normal big Mario
 
@@ -348,7 +347,7 @@ class Mario(pg.sprite.Sprite):
         self.black_small_frames = [self.right_small_black_frames,
                              self.left_small_black_frames]
 
-        self.invincible_small_frames_list = [self.normal_small_frames,
+        self.invincible_small_frames_list = [self.green_small_frames,
                                           self.green_small_frames,
                                           self.red_small_frames,
                                           self.black_small_frames]
@@ -1061,9 +1060,11 @@ class Mario(pg.sprite.Sprite):
             if self.big:
                 self.right_frames = self.right_big_normal_frames
                 self.left_frames = self.left_big_normal_frames
-            else:
-                self.right_frames = self.invincible_small_frames_list[0][0]
-                self.left_frames = self.invincible_small_frames_list[0][1]
+            else:#check
+                #self.right_frames = self.invincible_small_frames_list[0][0]
+                #self.left_frames = self.invincible_small_frames_list[0][1]
+                self.right_frames = self.normal_small_frames[0]
+                self.left_frames = self.normal_small_frames[1]
 
 
     def change_frame_list(self, frame_switch_speed):

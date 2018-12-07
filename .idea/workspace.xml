@@ -2,30 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7b78f17c-96d3-476b-83d8-6c6faa39a11a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/castle_flag.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/castle_flag.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/coin.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/coin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/coin_box.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/coin_box.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/collider.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/collider.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/enemies.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/enemies.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/flagpole.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/flagpole.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/info.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/info.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/data/components/mario.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/mario.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/components/powerups.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/components/powerups.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/constants.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/constants.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/states/level1.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/states/level1.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/states/level2.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/states/level2.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/states/level3.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/states/level3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/states/level4.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/states/level4.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/states/main_menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/states/main_menu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/data/tools.py" beforeDir="false" afterPath="$PROJECT_DIR$/data/tools.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mario_level_1.exe" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mario_level_1.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/graphics/Thumbs.db" beforeDir="false" afterPath="$PROJECT_DIR$/resources/graphics/Thumbs.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/new_graphics/Thumbs.db" beforeDir="false" afterPath="$PROJECT_DIR$/resources/new_graphics/Thumbs.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/new_graphics/baby.png" beforeDir="false" afterPath="$PROJECT_DIR$/resources/new_graphics/baby.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/screenshot.png" beforeDir="false" afterPath="$PROJECT_DIR$/screenshot.png" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -47,12 +24,12 @@
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
         <counts>
-          <entry key="py" value="4980" />
+          <entry key="py" value="5018" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
-          <entry key="Python" value="4980" />
+          <entry key="Python" value="5018" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -81,10 +58,10 @@
         <entry file="file://$PROJECT_DIR$/data/states/level1.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="225">
-              <caret line="357" column="36" selection-start-line="357" selection-start-column="36" selection-end-line="357" selection-end-column="36" />
+              <caret line="219" column="36" selection-start-line="219" selection-start-column="36" selection-end-line="219" selection-end-column="36" />
               <folding>
                 <element signature="e#0#31#0" expanded="true" />
-                <marker date="1544200257841" expanded="true" signature="2998:3003" ph="..." />
+                <marker date="1544200488964" expanded="true" signature="2998:3003" ph="..." />
               </folding>
             </state>
           </provider>
@@ -93,11 +70,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/data/components/mario.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="150">
-              <caret line="181" column="63" selection-start-line="181" selection-start-column="63" selection-end-line="181" selection-end-column="63" />
+            <state relative-caret-position="255">
+              <caret line="349" column="55" selection-start-line="349" selection-start-column="55" selection-end-line="349" selection-end-column="55" />
               <folding>
                 <element signature="e#32#51#0" expanded="true" />
-                <marker date="1544200330249" expanded="true" signature="17015:17034" ph="..." />
+                <marker date="1544201035612" expanded="true" signature="17343:17362" ph="..." />
               </folding>
             </state>
           </provider>
@@ -172,14 +149,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>self.cursor</find>
-      <find>info</find>
-      <find>main</find>
-      <find>c.PLAYER2</find>
-      <find>c.PLAYER1</find>
-      <find>key</find>
-      <find>input</find>
-      <find>setup.</find>
       <find>background</find>
       <find>flag</find>
       <find>sound</find>
@@ -198,10 +167,18 @@
       <find>for i in</find>
       <find>star</find>
       <find>big</find>
-      <find>normal_big</find>
       <find>normal_</find>
-      <find>update</find>
       <find>invincible</find>
+      <find>update</find>
+      <find>normal_big</find>
+      <find>_big_frame</find>
+      <find>big_frames</find>
+      <find>big_normal</find>
+      <find>invincible_small_frames_list</find>
+      <find>small</find>
+      <find>small_frames</find>
+      <find>#check</find>
+      <find>green_</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -727,17 +704,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/data/states/level1.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="357" column="36" selection-start-line="357" selection-start-column="36" selection-end-line="357" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-            <marker date="1544200257841" expanded="true" signature="2998:3003" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/data/components/coin_box.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="248">
@@ -745,13 +711,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/data/states/level1.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="225">
+          <caret line="219" column="36" selection-start-line="219" selection-start-column="36" selection-end-line="219" selection-end-column="36" />
+          <folding>
+            <element signature="e#0#31#0" expanded="true" />
+            <marker date="1544200488964" expanded="true" signature="2998:3003" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/data/components/mario.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="150">
-          <caret line="181" column="63" selection-start-line="181" selection-start-column="63" selection-end-line="181" selection-end-column="63" />
+        <state relative-caret-position="255">
+          <caret line="349" column="55" selection-start-line="349" selection-start-column="55" selection-end-line="349" selection-end-column="55" />
           <folding>
             <element signature="e#32#51#0" expanded="true" />
-            <marker date="1544200330249" expanded="true" signature="17015:17034" ph="..." />
+            <marker date="1544201035612" expanded="true" signature="17343:17362" ph="..." />
           </folding>
         </state>
       </provider>
