@@ -15,6 +15,7 @@ DOKI DOKI
 ### 다운받기 전에
 - Python 3과 Pygame이 설치되어 있어야 합니다.
 - Pygame 설치
+        
         pip install pygame
 
 
