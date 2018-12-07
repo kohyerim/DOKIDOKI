@@ -10,7 +10,7 @@ class Flag(pg.sprite.Sprite):
     def __init__(self, x, y):
         """Initialize object"""
         super(Flag, self).__init__()
-        self.sprite_sheet = setup.GFX['item_objects']
+        self.sprite_sheet = setup.NEWIMG['alpha']
         self.image = self.get_image(129, 2, 14, 14)
         self.rect = self.image.get_rect()
         self.rect.x = x

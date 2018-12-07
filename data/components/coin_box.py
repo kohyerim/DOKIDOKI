@@ -114,6 +114,8 @@ class Coin_box(pg.sprite.Sprite):
                 self.group.add(powerups.FireFlower(self.rect.centerx, self.rect.y))
             elif self.contents == '1up_mushroom':
                 self.group.add(powerups.LifeMushroom(self.rect.centerx, self.rect.y))
+            elif self.contents == c.HOTSIX:
+                self.group.add(powerups.HotSix(self.rect.centerx, self.rect.y))
 
 
         self.frame_index = 3
@@ -130,6 +132,15 @@ class Coin_box(pg.sprite.Sprite):
                                      self.rect.y,
                                      score_group))
             setup.SFX['coin'].play()
+        elif self.contents == c.KEYBOARD:
+            self.group.add(coin.Keyboard(self.rect.centerx, self.rect.y, score_group))
+
+        elif self.contents == c.MOUSE:
+            self.group.add(coin.Mouse(self.rect.centerx, self.rect.y, score_group))
+
+        elif self.contents == c.BOOK:
+            self.group.add(coin.PLbook(self.rect.centerx, self.rect.y, score_group))
+
         else:
             setup.SFX['powerup_appears'].play()
 

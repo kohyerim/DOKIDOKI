@@ -56,7 +56,7 @@ class Level1(tools._State):
     def setup_background(self):
         """Sets the background image, rect and scales it to the correct
         proportions"""
-        self.background = setup.GFX['level_1']
+        self.background = setup.NEWIMG['background']
         self.back_rect = self.background.get_rect()
         self.background = pg.transform.scale(self.background,
                                   (int(self.back_rect.width*c.BACKGROUND_MULTIPLER),
@@ -74,29 +74,26 @@ class Level1(tools._State):
     def setup_ground(self):
         """Creates collideable, invisible rectangles over top of the ground for
         sprites to walk on"""
-        ground_rect1 = collider.Collider(0, c.GROUND_HEIGHT,    2953, 60)
-        ground_rect2 = collider.Collider(3048, c.GROUND_HEIGHT,  635, 60)
+        ground_rect1 = collider.Collider(0, c.GROUND_HEIGHT, 10000, 60)
+        '''ground_rect2 = collider.Collider(3048, c.GROUND_HEIGHT,  635, 60)
         ground_rect3 = collider.Collider(3819, c.GROUND_HEIGHT, 2735, 60)
-        ground_rect4 = collider.Collider(6647, c.GROUND_HEIGHT, 2300, 60)
+        ground_rect4 = collider.Collider(6647, c.GROUND_HEIGHT, 2300, 60)'''
 
-        self.ground_group = pg.sprite.Group(ground_rect1,
-                                           ground_rect2,
-                                           ground_rect3,
-                                           ground_rect4)
+        self.ground_group = pg.sprite.Group(ground_rect1)
 
-    #def setup_pipes(self):
-    #    """Create collideable rects for all the pipes"""
+    def setup_pipes(self):
+        """Create collideable rects for all the pipes"""
 
-    #    pipe1 = collider.Collider(1202, 452, 83, 82)
-    #    pipe2 = collider.Collider(1631, 409, 83, 140)
-    #    pipe3 = collider.Collider(1973, 366, 83, 170)
-    #    pipe4 = collider.Collider(2445, 366, 83, 170)
-    #    pipe5 = collider.Collider(6989, 452, 83, 82)
-    #    pipe6 = collider.Collider(7675, 452, 83, 82)
+        pipe1 = collider.Collider(1202, 452, 83, 82)
+        pipe2 = collider.Collider(1631, 409, 83, 140)
+        pipe3 = collider.Collider(1973, 366, 83, 170)
+        pipe4 = collider.Collider(2445, 366, 83, 170)
+        pipe5 = collider.Collider(6989, 452, 83, 82)
+        pipe6 = collider.Collider(7675, 452, 83, 82)
 
-    #    self.pipe_group = pg.sprite.Group(pipe1, pipe2,
-    #                                      pipe3, pipe4,
-    #                                      pipe5, pipe6)
+        self.pipe_group = pg.sprite.Group(pipe1, pipe2,
+                                          pipe3, pipe4,
+                                          pipe5, pipe6)
 
 
     def setup_steps(self):
@@ -174,21 +171,7 @@ class Level1(tools._State):
         brick14 = bricks.Brick(3901, 193)
         brick15 = bricks.Brick(3944, 193)
         brick16 = bricks.Brick(3987, 193)
-        brick17 = bricks.Brick(4030, 365, c.SIXCOINS, self.coin_group)
-        brick18 = bricks.Brick(4287, 365)
-        brick19 = bricks.Brick(4330, 365, c.STAR, self.powerup_group)
-        brick20 = bricks.Brick(5058, 365)
-        brick21 = bricks.Brick(5187, 193)
-        brick22 = bricks.Brick(5230, 193)
-        brick23 = bricks.Brick(5273, 193)
-        brick24 = bricks.Brick(5488, 193)
-        brick25 = bricks.Brick(5574, 193)
-        brick26 = bricks.Brick(5617, 193)
-        brick27 = bricks.Brick(5531, 365)
-        brick28 = bricks.Brick(5574, 365)
-        brick29 = bricks.Brick(7202, 365)
-        brick30 = bricks.Brick(7245, 365)
-        brick31 = bricks.Brick(7331, 365)
+        brick17 = bricks.Brick(4030, 365)
 
         self.brick_group = pg.sprite.Group(brick1,  brick2,
                                            brick3,  brick4,
@@ -198,19 +181,12 @@ class Level1(tools._State):
                                            brick11, brick12,
                                            brick13, brick14,
                                            brick15, brick16,
-                                           brick17, brick18,
-                                           brick19, brick20,
-                                           brick21, brick22,
-                                           brick23, brick24,
-                                           brick25, brick26,
-                                           brick27, brick28,
-                                           brick29, brick30,
-                                           brick31)
+                                           brick17)
 
 
     def setup_coin_boxes(self):
         """Creates all the coin boxes and puts them in a sprite group"""
-        coin_box1  = coin_box.Coin_box(685, 365, c.BOOK, self.coin_group)
+        '''coin_box1  = coin_box.Coin_box(685, 365, c.BOOK, self.coin_group)
         coin_box2  = coin_box.Coin_box(901, 365, c.HOTSIX, self.powerup_group)
         coin_box3  = coin_box.Coin_box(987, 365, c.MOUSE, self.coin_group)
         coin_box4  = coin_box.Coin_box(943, 193, c.KEYBOARD, self.coin_group)
@@ -222,13 +198,21 @@ class Level1(tools._State):
         coin_box10 = coin_box.Coin_box(4800, 365, c.COIN, self.coin_group)
         coin_box11 = coin_box.Coin_box(5531, 193, c.COIN, self.coin_group)
         coin_box12 = coin_box.Coin_box(7288, 365, c.COIN, self.coin_group)
+        coin_box_test = coin_box.Coin_box(110, 300, c.COIN, self.coin_group)
 
         self.coin_box_group = pg.sprite.Group(coin_box1,  coin_box2,
                                               coin_box3,  coin_box4,
                                               coin_box5,  coin_box6,
                                               coin_box7,  coin_box8,
                                               coin_box9,  coin_box10,
-                                              coin_box11, coin_box12)
+                                              coin_box11, coin_box12,
+                                              coin_box_test)'''
+        coin_box_test = coin_box.Coin_box(110, 300, c.KEYBOARD, self.coin_group)
+        coin_box_test2 = coin_box.Coin_box(300, 300, c.MOUSE, self.coin_group)
+        coin_box_test3 = coin_box.Coin_box(400, 300, c.BOOK, self.coin_group)
+        coin_box_test4 = coin_box.Coin_box(500, 350, c.HOTSIX, self.powerup_group)
+        self.coin_box_group = pg.sprite.Group(coin_box_test, coin_box_test2, coin_box_test3, coin_box_test4)
+        #self.coin_box_group = pg.sprite.Group()
 
 
     def setup_flag_pole(self):
@@ -246,7 +230,7 @@ class Level1(tools._State):
         pole8 = flagpole.Pole(8505, 417)
         pole9 = flagpole.Pole(8505, 450)
 
-        finial = flagpole.Finial(8507, 97)
+        finial = flagpole.Finial(8505, 97)
 
         self.flag_pole_group = pg.sprite.Group(self.flag,
                                                finial,
@@ -264,7 +248,7 @@ class Level1(tools._State):
 
     def setup_enemies(self):
         """Creates all the enemies and stores them in a list of lists."""
-        goomba0 = enemies.Goomba()
+        '''goomba0 = enemies.Goomba()
         goomba1 = enemies.Goomba()
         goomba2 = enemies.Goomba()
         goomba3 = enemies.Goomba()
@@ -292,7 +276,22 @@ class Level1(tools._State):
         enemy_group7 = pg.sprite.Group(goomba8, goomba9)
         enemy_group8 = pg.sprite.Group(goomba10, goomba11)
         enemy_group9 = pg.sprite.Group(goomba12, goomba13)
-        enemy_group10 = pg.sprite.Group(goomba14, goomba15)
+        enemy_group10 = pg.sprite.Group(goomba14, goomba15)'''
+
+        error0 = enemies.Error()
+
+        bug0 = enemies.Bug()
+
+        enemy_group1 = pg.sprite.Group(error0)
+        enemy_group2 = pg.sprite.Group()
+        enemy_group3 = pg.sprite.Group()
+        enemy_group4 = pg.sprite.Group()
+        enemy_group5 = pg.sprite.Group()
+        enemy_group6 = pg.sprite.Group()
+        enemy_group7 = pg.sprite.Group()
+        enemy_group8 = pg.sprite.Group()
+        enemy_group9 = pg.sprite.Group()
+        enemy_group10 = pg.sprite.Group()
 
         self.enemy_group_list = [enemy_group1,
                                  enemy_group2,
@@ -304,7 +303,6 @@ class Level1(tools._State):
                                  enemy_group8,
                                  enemy_group9,
                                  enemy_group10]
-
 
     def setup_mario(self):
         """Places Mario at the beginning of the level"""
@@ -475,7 +473,7 @@ class Level1(tools._State):
     def create_flag_points(self):
         """Creates the points that appear when Mario touches the
         flag pole"""
-        x = 8518
+        x = 4100
         y = c.GROUND_HEIGHT - 60
         mario_bottom = self.mario.rect.bottom
 
@@ -562,7 +560,7 @@ class Level1(tools._State):
             self.adjust_mario_for_x_shell_collisions(shell)
 
         elif powerup:
-            if powerup.name == c.STAR:
+            if powerup.name == c.STAR or powerup.name == c.HOTSIX:
                 self.game_info[c.SCORE] += 1000
 
                 self.moving_score_list.append(
@@ -1102,6 +1100,7 @@ class Level1(tools._State):
                 self.adjust_fireball_position(powerup)
             elif powerup.name == '1up_mushroom':
                 self.adjust_mushroom_position(powerup)
+
 
 
     def adjust_mushroom_position(self, mushroom):

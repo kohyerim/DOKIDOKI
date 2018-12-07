@@ -56,7 +56,7 @@ class Level2(tools._State):
     def setup_background(self):
         """Sets the background image, rect and scales it to the correct
         proportions"""
-        self.background = setup.GFX['level_1']
+        self.background = setup.NEWIMG['background']
         self.back_rect = self.background.get_rect()
         self.background = pg.transform.scale(self.background,
                                   (int(self.back_rect.width*c.BACKGROUND_MULTIPLER),
@@ -358,7 +358,7 @@ class Level2(tools._State):
         self.handle_states(keys)
         self.check_if_time_out()
         self.blit_everything(surface)
-        self.sound_manager.update(self.game_info, self.mario)
+        #self.sound_manager.update(self.game_info, self.mario)
 
 
 
@@ -888,7 +888,7 @@ class Level2(tools._State):
             self.mario.rect.bottom = enemy.rect.top
             self.mario.state = c.JUMP
             self.mario.y_vel = -7
-        
+
 
 
     def adjust_mario_for_y_shell_collisions(self, shell):

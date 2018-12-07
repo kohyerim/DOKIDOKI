@@ -56,7 +56,7 @@ class Level4(tools._State):
     def setup_background(self):
         """Sets the background image, rect and scales it to the correct
         proportions"""
-        self.background = setup.GFX['level_1']
+        self.background = setup.NEWIMG['background']
         self.back_rect = self.background.get_rect()
         self.background = pg.transform.scale(self.background,
                                              (int(self.back_rect.width * c.BACKGROUND_MULTIPLER),
@@ -82,20 +82,6 @@ class Level4(tools._State):
                                             ground_rect2,
                                             ground_rect3,
                                             ground_rect4)
-
-    # def setup_pipes(self):
-    #    """Create collideable rects for all the pipes"""
-
-    #    pipe1 = collider.Collider(1202, 452, 83, 82)
-    #    pipe2 = collider.Collider(1631, 409, 83, 140)
-    #    pipe3 = collider.Collider(1973, 366, 83, 170)
-    #    pipe4 = collider.Collider(2445, 366, 83, 170)
-    #    pipe5 = collider.Collider(6989, 452, 83, 82)
-    #    pipe6 = collider.Collider(7675, 452, 83, 82)
-
-    #    self.pipe_group = pg.sprite.Group(pipe1, pipe2,
-    #                                      pipe3, pipe4,
-    #                                      pipe5, pipe6)
 
     def setup_steps(self):
         """Create collideable rects for all the steps"""

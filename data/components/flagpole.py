@@ -8,7 +8,7 @@ class Flag(pg.sprite.Sprite):
     """Flag on top of the flag pole at the end of the level"""
     def __init__(self, x, y):
         super(Flag, self).__init__()
-        self.sprite_sheet = setup.GFX['item_objects']
+        self.sprite_sheet = setup.NEWIMG['alpha']
         self.setup_images()
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -66,7 +66,7 @@ class Pole(pg.sprite.Sprite):
     """Pole that the flag is on top of"""
     def __init__(self, x, y):
         super(Pole, self).__init__()
-        self.sprite_sheet = setup.GFX['tile_set']
+        self.sprite_sheet = setup.NEWIMG['alpha']
         self.setup_frames()
         self.image = self.frames[0]
         self.rect = self.image.get_rect()
@@ -104,7 +104,7 @@ class Finial(pg.sprite.Sprite):
     """The top of the flag pole"""
     def __init__(self, x, y):
         super(Finial, self).__init__()
-        self.sprite_sheet = setup.GFX['tile_set']
+        self.sprite_sheet = setup.NEWIMG['alpha']
         self.setup_frames()
         self.image = self.frames[0]
         self.rect = self.image.get_rect()

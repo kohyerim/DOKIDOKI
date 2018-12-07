@@ -15,6 +15,10 @@ class Enemy(pg.sprite.Sprite):
     def setup_enemy(self, x, y, direction, name, setup_frames):
         """Sets up various values for enemy"""
         self.sprite_sheet = setup.GFX['smb_enemies_sheet']
+        self.error_img = setup.NEWIMG['error']
+        self.error_img = pg.transform.scale(self.error_img, (60, 60))
+        self.bug_img = setup.NEWIMG['bug']
+        self.bug_img = pg.transform.scale(self.bug_img, (60, 60))
         self.frames = []
         self.frame_index = 0
         self.animate_timer = 0
@@ -147,6 +151,52 @@ class Goomba(Enemy):
             self.get_image(30, 4, 16, 16))
         self.frames.append(
             self.get_image(61, 0, 16, 16))
+        self.frames.append(pg.transform.flip(self.frames[1], False, True))
+
+
+    def jumped_on(self):
+        """When Mario squishes him"""
+        self.frame_index = 2
+
+        if (self.current_time - self.death_timer) > 500:
+            self.kill()
+
+
+class Error(Enemy):
+    def __init__(self, y=c.GROUND_HEIGHT, x=0, direction=c.LEFT, name='error'):
+        Enemy.__init__(self)
+        self.setup_enemy(x, y, direction, name, self.setup_frames)
+
+
+
+    def setup_frames(self):
+        """Put the image frames in a list to be animated"""
+
+        for i in range(0, 4):
+            self.frames.append(self.error_img)
+        self.frames.append(pg.transform.flip(self.frames[1], False, True))
+
+
+    def jumped_on(self):
+        """When Mario squishes him"""
+        self.frame_index = 2
+
+        if (self.current_time - self.death_timer) > 500:
+            self.kill()
+
+
+class Bug(Enemy):
+    def __init__(self, y=c.GROUND_HEIGHT, x=0, direction=c.LEFT, name='bug'):
+        Enemy.__init__(self)
+        self.setup_enemy(x, y, direction, name, self.setup_frames)
+
+
+
+    def setup_frames(self):
+        """Put the image frames in a list to be animated"""
+
+        for i in range(0, 4):
+            self.frames.append(self.bug_img)
         self.frames.append(pg.transform.flip(self.frames[1], False, True))
 
 

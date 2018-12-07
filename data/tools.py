@@ -7,10 +7,11 @@ from . import level
 
 keybinding = {
     'action':pg.K_s,
-    'jump':pg.K_a,
+    'jump':pg.K_SPACE,
     'left':pg.K_LEFT,
     'right':pg.K_RIGHT,
-    'down':pg.K_DOWN
+    'down':pg.K_DOWN,
+    'check':pg.K_a
 }
 
 

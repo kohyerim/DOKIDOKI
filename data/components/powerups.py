@@ -235,6 +235,16 @@ class Star(Powerup):
             self.x_vel = 5
 
 
+class HotSix(Star):
+    def __init__(self, x, y):
+        Star.__init__(self, x, y, name='hotsix')
+
+    def setup_frames(self):
+        """Creating the self.frames list where the images for the animation
+        are stored"""
+        for i in range(0, 5):
+            self.frames.append(pg.transform.scale(setup.NEWIMG['hot6'], (45, 45)))
+
 
 class FireBall(pg.sprite.Sprite):
     """Shot from Fire Mario"""

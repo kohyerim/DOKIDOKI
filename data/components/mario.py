@@ -10,6 +10,10 @@ class Mario(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['mario_bros']
+        self.test_image = setup.NEWIMG['baby']
+        self.test_image = pg.transform.flip(self.test_image, 1, 0)
+        self.test_image = pg.transform.scale(self.test_image, (85, 85))
+
 
         self.setup_timers()
         self.setup_state_booleans()
@@ -105,7 +109,15 @@ class Mario(pg.sprite.Sprite):
 
         #Images for normal small mario#
 
-        self.right_small_normal_frames.append(
+        for i in range(0, 11):
+            self.right_small_normal_frames.append(self.test_image)
+
+        for i in range(0, 6):
+            self.right_small_green_frames.append(pg.transform.scale(self.test_image, (200, 200)))
+            self.right_small_red_frames.append(pg.transform.scale(self.test_image, (200, 200)))
+            self.right_small_black_frames.append(pg.transform.scale(self.test_image, (200, 200)))
+
+        ''''self.right_small_normal_frames.append(
             self.get_image(178, 32, 12, 16))  # Right [0]
         self.right_small_normal_frames.append(
             self.get_image(80,  32, 15, 16))  # Right walking 1 [1]
@@ -126,10 +138,10 @@ class Mario(pg.sprite.Sprite):
         self.right_small_normal_frames.append(
             self.get_image(194, 32, 12, 16))  # Frame 1 of flag pole Slide [9]
         self.right_small_normal_frames.append(
-            self.get_image(210, 33, 12, 16))  # Frame 2 of flag pole slide [10]
+            self.get_image(210, 33, 12, 16))  # Frame 2 of flag pole slide [10]'''
 
 
-        #Images for small green mario (for invincible animation)#
+        '''#Images for small green mario (for invincible animation)#
 
         self.right_small_green_frames.append(
             self.get_image(178, 224, 12, 16))  # Right standing [0]
@@ -172,7 +184,7 @@ class Mario(pg.sprite.Sprite):
         self.right_small_black_frames.append(
             self.get_image(144, 176, 16, 16))  # Right jump [4]
         self.right_small_black_frames.append(
-            self.get_image(130, 176, 14, 16))  # Right skid [5]
+            self.get_image(130, 176, 14, 16))  # Right skid [5]'''
 
 
         #Images for normal big Mario
@@ -395,6 +407,8 @@ class Mario(pg.sprite.Sprite):
                                     int(rect.height*c.SIZE_MULTIPLIER)))
         return image
 
+    def get_babay(self, x, y, width, height):
+        pass
 
     def update(self, keys, game_info, fire_group):
         """Updates Mario's states and animations once per frame"""
@@ -464,6 +478,8 @@ class Mario(pg.sprite.Sprite):
                     setup.SFX['small_jump'].play()
                 self.state = c.JUMP
                 self.y_vel = c.JUMP_VEL
+        elif keys[tools.keybinding['check']]:
+            print(self.rect.x)
         else:
             self.state = c.STAND
 

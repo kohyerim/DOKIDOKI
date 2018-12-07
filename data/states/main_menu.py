@@ -1,6 +1,7 @@
 __author__ = 'justinarmstrong'
 
 import pygame as pg
+import sys
 from .. import setup, tools
 from .. import constants as c
 from .. components import info, mario
@@ -37,7 +38,7 @@ class Menu(tools._State):
     def setup_cursor(self):
         """Creates the mushroom cursor to select 1 or 2 player game"""
         self.cursor = pg.sprite.Sprite()
-        dest = (220, 358)
+        dest = (140, 358)
         self.cursor.image, self.cursor.rect = self.get_image(
             24, 160, 8, 8, dest, setup.GFX['item_objects'])
         self.cursor.state = c.PLAYER1
@@ -52,16 +53,15 @@ class Menu(tools._State):
 
     def setup_background(self):
         """Setup the background image to blit"""
-        self.background = setup.GFX['level_1']
+        self.background = setup.NEWIMG['background']
         self.background_rect = self.background.get_rect()
         self.background = pg.transform.scale(self.background,
                                    (int(self.background_rect.width*c.BACKGROUND_MULTIPLER),
                                     int(self.background_rect.height*c.BACKGROUND_MULTIPLER)))
         self.viewport = setup.SCREEN.get_rect(bottom=setup.SCREEN_RECT.bottom)
-
         self.image_dict = {}
         self.image_dict['GAME_NAME_BOX'] = self.get_image(
-            1, 60, 176, 88, (170, 100), setup.GFX['title_screen'])
+            1, 60, 176, 88, (280, 20), setup.NEWIMG['title'])
 
 
 
@@ -105,7 +105,7 @@ class Menu(tools._State):
 
     def update_cursor(self, keys):
         """Update the position of the cursor"""
-        input_list = [pg.K_RETURN, pg.K_a, pg.K_s]
+        input_list = [pg.K_RETURN, pg.K_SPACE]
 
         if self.cursor.state == c.PLAYER1:
             self.cursor.rect.y = 358
@@ -119,6 +119,9 @@ class Menu(tools._State):
             self.cursor.rect.y = 403
             if keys[pg.K_UP]:
                 self.cursor.state = c.PLAYER1
+            for input in input_list:
+                if keys[input]:
+                    sys.exit()
 
 
     def reset_game_info(self):

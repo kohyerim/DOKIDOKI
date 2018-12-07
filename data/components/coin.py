@@ -11,6 +11,9 @@ class Coin(pg.sprite.Sprite):
     def __init__(self, x, y, score_group):
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['item_objects']
+        self.keyboard_img = pg.transform.scale(setup.NEWIMG['keyboard'], (50, 50))
+        self.mouse_img = pg.transform.scale(setup.NEWIMG['mouse'], (50, 50))
+        self.PLBook_img = pg.transform.scale(setup.NEWIMG['PLbook'], (50, 50))
         self.frames = []
         self.frame_index = 0
         self.animation_timer = 0
@@ -78,7 +81,94 @@ class Coin(pg.sprite.Sprite):
                                                 200))
 
 
+class PLbook(Coin):
+    def __init__(self, x, y, score_group):
+        Coin.__init__(self, x, y, score_group)
 
+    def setup_frames(self):
+        """create the frame list"""
+        for i in range(0, 5):
+            self.frames.append(self.PLBook_img)
+
+    def spinning(self):
+        """Action when the coin is in the SPIN state"""
+        self.image = self.frames[self.frame_index]
+        self.rect.y += self.y_vel
+        self.y_vel += self.gravity
+
+        if (self.current_time - self.animation_timer) > 80:
+            if self.frame_index < 3:
+                self.frame_index += 1
+            else:
+                self.frame_index = 0
+
+            self.animation_timer = self.current_time
+
+        if self.rect.bottom > self.initial_height:
+            self.kill()
+            self.score_group.append(score.Score(self.rect.centerx - self.viewport.x,
+                                                self.rect.y,
+                                                400))
+
+
+class Keyboard(Coin):
+    def __init__(self, x, y, score_group):
+        Coin.__init__(self, x, y, score_group)
+
+    def setup_frames(self):
+        """create the frame list"""
+        for i in range(0, 5):
+            self.frames.append(self.keyboard_img)
+
+    def spinning(self):
+        """Action when the coin is in the SPIN state"""
+        self.image = self.frames[self.frame_index]
+        self.rect.y += self.y_vel
+        self.y_vel += self.gravity
+
+        if (self.current_time - self.animation_timer) > 80:
+            if self.frame_index < 3:
+                self.frame_index += 1
+            else:
+                self.frame_index = 0
+
+            self.animation_timer = self.current_time
+
+        if self.rect.bottom > self.initial_height:
+            self.kill()
+            self.score_group.append(score.Score(self.rect.centerx - self.viewport.x,
+                                                self.rect.y,
+                                                300))
+
+
+class Mouse(Coin):
+    def __init__(self, x, y, score_group):
+        Coin.__init__(self, x, y, score_group)
+
+    def setup_frames(self):
+        """create the frame list"""
+        for i in range(0, 5):
+            self.frames.append(self.mouse_img)
+
+    def spinning(self):
+        """Action when the coin is in the SPIN state"""
+        self.image = self.frames[self.frame_index]
+        self.rect.y += self.y_vel
+        self.y_vel += self.gravity
+
+        if (self.current_time - self.animation_timer) > 80:
+            if self.frame_index < 3:
+                self.frame_index += 1
+            else:
+                self.frame_index = 0
+
+            self.animation_timer = self.current_time
+
+        if self.rect.bottom > self.initial_height:
+            self.kill()
+            self.score_group.append(score.Score(self.rect.centerx - self.viewport.x,
+                                                self.rect.y,
+                                                200))
 
 
 
