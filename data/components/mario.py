@@ -10,16 +10,40 @@ class Mario(pg.sprite.Sprite):
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
         self.sprite_sheet = setup.GFX['mario_bros']
-        self.test_image = setup.NEWIMG['baby']
-        self.test_image = pg.transform.flip(self.test_image, 1, 0)
-        self.test_image = pg.transform.scale(self.test_image, (85, 85))
+        self.baby_image = setup.NEWIMG['baby']
+        self.baby_image = pg.transform.flip(self.baby_image, 1, 0)
+        self.baby_image = pg.transform.scale(self.baby_image, (85, 85))
+        self.baby_image2 = setup.NEWIMG['baby_2']
+        self.baby_image2 = pg.transform.flip(self.baby_image2, 1, 0)
+        self.baby_image2 = pg.transform.scale(self.baby_image2, (85, 85))
 
+        self.child_image = setup.NEWIMG['child']
+        self.child_image = pg.transform.flip(self.child_image, 1, 0)
+        self.child_image = pg.transform.scale(self.child_image, (85, 85))
+        self.child_image2 = setup.NEWIMG['child_2']
+        self.child_image2 = pg.transform.flip(self.child_image2, 1, 0)
+        self.child_image2 = pg.transform.scale(self.child_image2, (85, 85))
+
+        self.student_image = setup.NEWIMG['student']
+        self.student_image = pg.transform.flip(self.student_image, 1, 0)
+        self.student_image = pg.transform.scale(self.student_image, (85, 85))
+        self.student_image2 = setup.NEWIMG['student_2']
+        self.student_image2 = pg.transform.flip(self.student_image2, 1, 0)
+        self.student_image2 = pg.transform.scale(self.student_image2, (85, 85))
+
+        self.adult_image = setup.NEWIMG['adult']
+        self.adult_image = pg.transform.flip(self.adult_image, 1, 0)
+        self.adult_image = pg.transform.scale(self.adult_image, (85, 85))
+        self.adult_image2 = setup.NEWIMG['adult_2']
+        self.adult_image2 = pg.transform.flip(self.adult_image2, 1, 0)
+        self.adult_image2 = pg.transform.scale(self.adult_image2, (85, 85))
 
         self.setup_timers()
         self.setup_state_booleans()
         self.setup_forces()
         self.setup_counters()
         self.load_images_from_sheet()
+        self.change_level(c.LEVEL1)
 
         self.state = c.WALK
         self.image = self.right_frames[self.frame_index]
@@ -27,7 +51,7 @@ class Mario(pg.sprite.Sprite):
         self.mask = pg.mask.from_surface(self.image)
 
         self.key_timer = 0
-
+        self.level = None
 
     def setup_timers(self):
         """Sets up timers for animations"""
@@ -57,6 +81,8 @@ class Mario(pg.sprite.Sprite):
         self.in_castle = False
         self.crouching = False
         self.losing_invincibility = False
+
+        self.hotsix_check = False
 
 
     def setup_forces(self):
@@ -107,15 +133,97 @@ class Mario(pg.sprite.Sprite):
         self.left_fire_frames = []
 
 
+
+        '''frames we use'''
+        self.right_baby_image_frames = []
+        self.left_baby_image_frames = []
+        self.right_baby_big_image_frames = []
+        self.left_baby_big_image_frames = []
+        self.baby_big_image_frames = []
+        self.baby_frames = []
+        self.baby_big_frames = []
+
+        self.right_child_image_frames = []
+        self.left_child_image_frames = []
+        self.child_big_image_frames = []
+        self.child_frames = []
+
+        self.right_student_image_frames = []
+        self.left_student_image_frames = []
+        self.student_big_image_frames = []
+        self.student_frames = []
+
+        self.right_adult_image_frames = []
+        self.left_adult_image_frames = []
+        self.adult_big_image_frames = []
+        self.adult_frames = []
+
+
         #Images for normal small mario#
 
         for i in range(0, 11):
-            self.right_small_normal_frames.append(self.test_image)
+            self.right_small_normal_frames.append(self.baby_image)
+
 
         for i in range(0, 6):
-            self.right_small_green_frames.append(pg.transform.scale(self.test_image, (150, 150)))
-            self.right_small_red_frames.append(pg.transform.scale(self.test_image, (150, 150)))
-            self.right_small_black_frames.append(pg.transform.scale(self.test_image, (150, 150)))
+            self.right_small_green_frames.append(pg.transform.scale(self.baby_image, (150, 150)))
+            self.right_small_red_frames.append(pg.transform.scale(self.baby_image, (150, 150)))
+            self.right_small_black_frames.append(pg.transform.scale(self.baby_image, (150, 150))) #check it
+
+        '''every image frames we use in DOKIDOKI'''
+        for i in range(0, 7): # baby image setting
+            self.right_baby_image_frames.append(self.baby_image)
+            self.right_baby_image_frames.append(self.baby_image2)
+        for frame in self.right_baby_image_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_baby_image_frames.append(new_image)
+
+        for frame in self.right_baby_image_frames:
+            self.right_baby_big_image_frames.append(pg.transform.scale(frame, (100, 100)))
+        for frame in self.right_baby_big_image_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_baby_big_image_frames.append(new_image)
+
+        self.baby_frames = [self.right_baby_image_frames,
+                            self.left_baby_image_frames]
+        self.baby_big_frames = [self.right_baby_big_image_frames,
+                                self.left_baby_big_image_frames]
+
+        for i in range(0, 7): # child image setting
+            self.right_child_image_frames.append(self.child_image)
+            self.right_child_image_frames.append(self.child_image2)
+        for frame in self.right_child_image_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_child_image_frames.append(new_image)
+
+
+        self.child_frames = [self.right_child_image_frames,
+                             self.left_child_image_frames]
+
+        for i in range(0, 7): # student image setting
+            self.right_student_image_frames.append(self.student_image)
+            self.right_student_image_frames.append(self.student_image2)
+        for frame in self.right_student_image_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_student_image_frames.append(new_image)
+
+
+        self.student_frames = [self.right_student_image_frames,
+                             self.left_student_image_frames]
+
+        for i in range(0, 7): # adult image setting
+            self.right_adult_image_frames.append(self.adult_image)
+            self.right_adult_image_frames.append(self.adult_image2)
+        for frame in self.right_adult_image_frames:
+            new_image = pg.transform.flip(frame, True, False)
+            self.left_adult_image_frames.append(new_image)
+
+        self.adult_frames = [self.right_adult_image_frames,
+                             self.left_adult_image_frames]
+
+
+
+
 
         ''''self.right_small_normal_frames.append(
             self.get_image(178, 32, 12, 16))  # Right [0]
@@ -334,7 +442,8 @@ class Mario(pg.sprite.Sprite):
             new_image = pg.transform.flip(frame, True, False)
             self.left_fire_frames.append(new_image)
 
-
+        self.normal_small_frames = [self.right_small_normal_frames,
+                                    self.left_small_normal_frames]
         self.normal_small_frames = [self.right_small_normal_frames,
                               self.left_small_normal_frames]
 
@@ -390,10 +499,6 @@ class Mario(pg.sprite.Sprite):
                            self.left_small_black_frames]
 
 
-        self.right_frames = self.normal_small_frames[0]
-        self.left_frames = self.normal_small_frames[1]
-
-
     def get_image(self, x, y, width, height):
         """Extracts image from sprite sheet"""
         image = pg.Surface([width, height])
@@ -406,15 +511,14 @@ class Mario(pg.sprite.Sprite):
                                     int(rect.height*c.SIZE_MULTIPLIER)))
         return image
 
-    def get_babay(self, x, y, width, height):
-        pass
 
-    def update(self, keys, game_info, fire_group):
+    def update(self, keys, game_info, fire_group, level):
         """Updates Mario's states and animations once per frame"""
         self.current_time = game_info[c.CURRENT_TIME]
         self.handle_state(keys, fire_group)
         self.check_for_special_state()
         self.animation()
+        self.change_level(level)
 
 
     def handle_state(self, keys, fire_group):
@@ -1060,11 +1164,9 @@ class Mario(pg.sprite.Sprite):
             if self.big:
                 self.right_frames = self.right_big_normal_frames
                 self.left_frames = self.left_big_normal_frames
-            else:#check
-                #self.right_frames = self.invincible_small_frames_list[0][0]
-                #self.left_frames = self.invincible_small_frames_list[0][1]
-                self.right_frames = self.normal_small_frames[0]
-                self.left_frames = self.normal_small_frames[1]
+            else:
+                self.right_frames = self.invincible_small_frames_list[0][0]
+                self.left_frames = self.invincible_small_frames_list[0][1]
 
 
     def change_frame_list(self, frame_switch_speed):
@@ -1077,7 +1179,7 @@ class Mario(pg.sprite.Sprite):
             if self.big:
                 frames = self.invincible_big_frames_list[self.invincible_index]
             else:
-                frames = self.invincible_small_frames_list[self.invincible_index]
+                frames = self.invincible_small_frames_list[self.invincible_index] #change_invicible_small
 
             self.right_frames = frames[0]
             self.left_frames = frames[1]
@@ -1146,6 +1248,49 @@ class Mario(pg.sprite.Sprite):
             self.image = self.right_frames[self.frame_index]
         else:
             self.image = self.left_frames[self.frame_index]
+
+    def change_level(self, level):
+        if level == c.LEVEL1:
+            self.right_frames = self.baby_frames[0]
+            self.left_frames = self.baby_frames[1]
+
+            if self.invincible :
+                if self.facing_right:
+                    self.image = self.right_baby_big_image_frames[self.frame_index]
+                else:
+                    self.image = self.left_baby_big_image_frames[self.frame_index]
+            else:
+                if self.facing_right:
+                    self.image = self.right_baby_image_frames[self.frame_index]
+                else:
+                    self.image = self.left_baby_image_frames[self.frame_index]
+
+        elif level == c.LEVEL2:
+            self.right_frames = self.child_frames[0]
+            self.left_frames = self.child_frames[1]
+
+            if self.facing_right:
+                self.image = self.right_child_image_frames[self.frame_index]
+            else:
+                self.image = self.left_child_image_frames[self.frame_index]
+
+        elif level == c.LEVEL3:
+            self.right_frames = self.student_frames[0]
+            self.left_frames = self.student_frames[1]
+
+            if self.facing_right:
+                self.image = self.right_student_image_frames[self.frame_index]
+            else:
+                self.image = self.left_student_image_frames[self.frame_index]
+
+        elif level == c.LEVEL4:
+            self.right_frames = self.adult_frames[0]
+            self.left_frames = self.adult_frames[1]
+
+            if self.facing_right:
+                self.image = self.right_adult_image_frames[self.frame_index]
+            else:
+                self.image = self.left_adult_image_frames[self.frame_index]
 
 
 

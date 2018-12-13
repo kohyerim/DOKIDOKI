@@ -12,6 +12,9 @@ MOUSE = "mouse"
 KEYBOARD = "keyboard"
 HOTSIX = "hotsix"
 ENDING = "ending"
+TOSTAGE2 = "stage2"
+TOSTAGE3 = "stage3"
+TOSTAGE4 = "stage4"
 ######################
 
 SCREEN_HEIGHT = 520

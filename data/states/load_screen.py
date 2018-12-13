@@ -4,6 +4,7 @@ from .. import setup, tools
 from .. import constants as c
 from .. import game_sound
 from ..components import info
+import pygame as pg
 
 
 class LoadScreen(tools._State):
@@ -21,6 +22,9 @@ class LoadScreen(tools._State):
         self.overhead_info = info.OverheadInfo(self.game_info, info_state)
         self.sound_manager = game_sound.Sound(self.overhead_info)
 
+        self.stage_image = setup.NEWIMG['stage1']
+        self.stage_image = pg.transform.scale(self.stage_image, (400, 400))
+
     def set_next_state(self):
         """Sets the next state"""
         return c.LEVEL1
@@ -33,8 +37,9 @@ class LoadScreen(tools._State):
         """Updates the loading screen"""
         if (current_time - self.start_time) < 2400:
             surface.fill(c.BLACK)
-            self.overhead_info.update(self.game_info)
-            self.overhead_info.draw(surface)
+            #self.overhead_info.update(self.game_info)
+            #self.overhead_info.draw(surface)
+            surface.blit(self.stage_image, (220, 75))
 
         elif (current_time - self.start_time) < 2600:
             surface.fill(c.BLACK)
@@ -126,4 +131,123 @@ class Ending(LoadScreen):
             self.done = True
 
 
+class ToStage2(LoadScreen):
+    def __init__(self):
+        super(ToStage2, self).__init__()
+        self.stage_image = pg.transform.scale(setup.NEWIMG['stage2'], (400, 400))
 
+    def set_next_state(self):
+        """Sets the next state"""
+        return c.LEVEL2
+
+    def set_overhead_info_state(self):
+        """sets the state to send to the overhead info object"""
+        return c.LOAD_SCREEN
+
+    def update(self, surface, keys, current_time):
+        """Updates the loading screen"""
+        if (current_time - self.start_time) < 2400:
+            surface.fill(c.BLACK)
+            self.overhead_info.update(self.game_info)
+            #self.overhead_info.draw(surface)
+            surface.blit(self.stage_image, (222, 75))
+
+        elif (current_time - self.start_time) < 2600:
+            surface.fill(c.BLACK)
+
+        elif (current_time - self.start_time) < 2635:
+            surface.fill((106, 150, 252))
+
+        else:
+            self.done = True
+
+
+class ToStage2(LoadScreen):
+    def __init__(self):
+        super(ToStage2, self).__init__()
+        self.stage_image = pg.transform.scale(setup.NEWIMG['stage2'], (400, 400))
+
+    def set_next_state(self):
+        """Sets the next state"""
+        return c.LEVEL2
+
+    def set_overhead_info_state(self):
+        """sets the state to send to the overhead info object"""
+        return c.LOAD_SCREEN
+
+    def update(self, surface, keys, current_time):
+        """Updates the loading screen"""
+        if (current_time - self.start_time) < 2400:
+            surface.fill(c.BLACK)
+            self.overhead_info.update(self.game_info)
+            #self.overhead_info.draw(surface)
+            surface.blit(self.stage_image, (220, 75))
+
+        elif (current_time - self.start_time) < 2600:
+            surface.fill(c.BLACK)
+
+        elif (current_time - self.start_time) < 2635:
+            surface.fill((106, 150, 252))
+
+        else:
+            self.done = True
+
+class ToStage3(LoadScreen):
+    def __init__(self):
+        super(ToStage3, self).__init__()
+        self.stage_image = pg.transform.scale(setup.NEWIMG['stage3'], (400, 400))
+
+    def set_next_state(self):
+        """Sets the next state"""
+        return c.LEVEL3
+
+    def set_overhead_info_state(self):
+        """sets the state to send to the overhead info object"""
+        return c.LOAD_SCREEN
+
+    def update(self, surface, keys, current_time):
+        """Updates the loading screen"""
+        if (current_time - self.start_time) < 2400:
+            surface.fill(c.BLACK)
+            self.overhead_info.update(self.game_info)
+            #self.overhead_info.draw(surface)
+            surface.blit(self.stage_image, (220, 75))
+
+        elif (current_time - self.start_time) < 2600:
+            surface.fill(c.BLACK)
+
+        elif (current_time - self.start_time) < 2635:
+            surface.fill((106, 150, 252))
+
+        else:
+            self.done = True
+
+class ToStage4(LoadScreen):
+    def __init__(self):
+        super(ToStage4, self).__init__()
+        self.stage_image = pg.transform.scale(setup.NEWIMG['stage4'], (400, 400))
+
+    def set_next_state(self):
+        """Sets the next state"""
+        return c.LEVEL2
+
+    def set_overhead_info_state(self):
+        """sets the state to send to the overhead info object"""
+        return c.LOAD_SCREEN
+
+    def update(self, surface, keys, current_time):
+        """Updates the loading screen"""
+        if (current_time - self.start_time) < 2400:
+            surface.fill(c.BLACK)
+            self.overhead_info.update(self.game_info)
+            #self.overhead_info.draw(surface)
+            surface.blit(self.stage_image, (220, 75))
+
+        elif (current_time - self.start_time) < 2600:
+            surface.fill(c.BLACK)
+
+        elif (current_time - self.start_time) < 2635:
+            surface.fill((106, 150, 252))
+
+        else:
+            self.done = True

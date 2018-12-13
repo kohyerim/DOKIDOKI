@@ -290,6 +290,7 @@ class Level3(tools._State):
         self.mario = mario.Mario()
         self.mario.rect.x = self.viewport.x + 110
         self.mario.rect.bottom = c.GROUND_HEIGHT
+        self.mario.level = c.LEVEL3
 
     def setup_checkpoints(self):
         """Creates invisible checkpoints that when collided will trigger
@@ -350,7 +351,7 @@ class Level3(tools._State):
         """Updates mario in a transition state (like becoming big, small,
          or dies). Checks if he leaves the transition state or dies to
          change the level state back"""
-        self.mario.update(keys, self.game_info, self.powerup_group)
+        self.mario.update(keys, self.game_info, self.powerup_group, self.mario.level)
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         if self.flag_score:
@@ -374,7 +375,7 @@ class Level3(tools._State):
 
     def update_all_sprites(self, keys):
         """Updates the location of all sprites on the screen."""
-        self.mario.update(keys, self.game_info, self.powerup_group)
+        self.mario.update(keys, self.game_info, self.powerup_group, self.mario.level)
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         if self.flag_score:
@@ -1324,7 +1325,7 @@ class Level3(tools._State):
             if self.game_info[c.SCORE] < 7000:
                 self.next = c.GAME_OVER
             elif self.game_info[c.SCORE] >= 7000:
-                self.next = c.LEVEL4
+                self.next = c.TOSTAGE4
             self.done = True
 
     def blit_everything(self, surface):

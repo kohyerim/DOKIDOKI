@@ -155,64 +155,128 @@ class Level1(tools._State):
         self.powerup_group = pg.sprite.Group()
         self.brick_pieces_group = pg.sprite.Group()
 
-        brick1  = bricks.Brick(858,  365)
-        brick2  = bricks.Brick(944,  365)
-        brick3  = bricks.Brick(1030, 365)
-        brick4  = bricks.Brick(3299, 365)
-        brick5  = bricks.Brick(3385, 365)
-        brick6  = bricks.Brick(3430, 193)
-        brick7  = bricks.Brick(3473, 193)
-        brick8  = bricks.Brick(3516, 193)
-        brick9  = bricks.Brick(3559, 193)
-        brick10 = bricks.Brick(3602, 193)
-        brick11 = bricks.Brick(3645, 193)
-        brick12 = bricks.Brick(3688, 193)
-        brick13 = bricks.Brick(3731, 193)
-        brick14 = bricks.Brick(3901, 193)
-        brick15 = bricks.Brick(3944, 193)
-        brick16 = bricks.Brick(3987, 193)
-        brick17 = bricks.Brick(4030, 365)
+        brick1  = bricks.Brick(795,  350)
+        brick2  = bricks.Brick(881,  350)
+        brick3  = bricks.Brick(967,  350)
+        brick4  = bricks.Brick(1690, 350)
+        brick5  = bricks.Brick(1733, 350)
+        brick6  = bricks.Brick(1776, 350)
+        brick7  = bricks.Brick(1819, 350)
+        brick7_add  = bricks.Brick(1862, 350)
+        brick8  = bricks.Brick(2663, 350)
+        brick9  = bricks.Brick(2577, 350)
+        brick10 = bricks.Brick(2749, 350)
+        brick11 = bricks.Brick(4657, 350)
+        brick12 = bricks.Brick(4829, 350)
+        brick13 = bricks.Brick(3543, 350)
+        brick14 = bricks.Brick(3543, 150)
+        brick15 = bricks.Brick(3500, 150)
+        brick16 = bricks.Brick(3457, 150)
+        brick17 = bricks.Brick(3414, 150)
+        brick18 = bricks.Brick(3457, 350)
+        brick19 = bricks.Brick(3414, 150)
+        brick20 = bricks.Brick(3457, 350)
+        brick21 = bricks.Brick(3414, 350)
+        brick22 = bricks.Brick(3399, 350)
+        brick23 = bricks.Brick(4743, 350)
+        brick24 = bricks.Brick(4915, 350)
+        brick25 = bricks.Brick(6435, 350)
+        brick26 = bricks.Brick(6435, 150)
+        brick27 = bricks.Brick(6478, 350)
+        brick28 = bricks.Brick(6478, 150)
+        brick29 = bricks.Brick(6521, 350)
+        brick30 = bricks.Brick(6521, 150)
+        brick31 = bricks.Brick(6564, 350)
+        brick32 = bricks.Brick(6564, 150)
+        brick33 = bricks.Brick(6607, 350)
+        brick34 = bricks.Brick(6607, 150)
+        brick35 = bricks.Brick(7357, 350)
+        brick36 = bricks.Brick(7443, 350)
+        brick37 = bricks.Brick(7529, 350)
 
-        self.brick_group = pg.sprite.Group(brick1,  brick2,
-                                           brick3,  brick4,
-                                           brick5,  brick6,
-                                           brick7,  brick8,
-                                           brick9,  brick10,
-                                           brick11, brick12,
-                                           brick13, brick14,
-                                           brick15, brick16,
-                                           brick17)
+        self.brick_group = pg.sprite.Group(brick1,
+                                           brick2,
+                                           brick3,
+                                           brick4,
+                                           brick5,
+                                           brick6,
+                                           brick7,
+                                           brick7_add,
+                                           brick8,
+                                           brick9,
+                                           brick10,
+                                           brick11,
+                                           brick12,
+                                           brick13,
+                                           brick14,
+                                           brick15,
+                                           brick16,
+                                           brick17,
+                                           brick18,
+                                           brick19,
+                                           brick20,
+                                           brick21,
+                                           brick22,
+                                           brick23,
+                                           brick24,
+                                           brick25,
+                                           brick26,
+                                           brick27,
+                                           brick28,
+                                           brick29,
+                                           brick30,
+                                           brick31,
+                                           brick32,
+                                           brick33,
+                                           brick34,
+                                           brick35,
+                                           brick36,
+                                           brick37)
 
 
     def setup_coin_boxes(self):
         """Creates all the coin boxes and puts them in a sprite group"""
-        '''coin_box1  = coin_box.Coin_box(685, 365, c.BOOK, self.coin_group)
-        coin_box2  = coin_box.Coin_box(901, 365, c.HOTSIX, self.powerup_group)
-        coin_box3  = coin_box.Coin_box(987, 365, c.MOUSE, self.coin_group)
-        coin_box4  = coin_box.Coin_box(943, 193, c.KEYBOARD, self.coin_group)
-        coin_box5  = coin_box.Coin_box(3342, 365, c.HOTSIX, self.powerup_group)
-        coin_box6  = coin_box.Coin_box(4030, 193, c.COIN, self.coin_group)
-        coin_box7  = coin_box.Coin_box(4544, 365, c.COIN, self.coin_group)
-        coin_box8  = coin_box.Coin_box(4672, 365, c.COIN, self.coin_group)
-        coin_box9  = coin_box.Coin_box(4672, 193, c.MUSHROOM, self.powerup_group)
-        coin_box10 = coin_box.Coin_box(4800, 365, c.COIN, self.coin_group)
-        coin_box11 = coin_box.Coin_box(5531, 193, c.COIN, self.coin_group)
-        coin_box12 = coin_box.Coin_box(7288, 365, c.COIN, self.coin_group)
-        coin_box_test = coin_box.Coin_box(110, 300, c.COIN, self.coin_group)
 
-        self.coin_box_group = pg.sprite.Group(coin_box1,  coin_box2,
-                                              coin_box3,  coin_box4,
-                                              coin_box5,  coin_box6,
-                                              coin_box7,  coin_box8,
-                                              coin_box9,  coin_box10,
-                                              coin_box11, coin_box12,
-                                              coin_box_test)'''
-        coin_box_test = coin_box.Coin_box(110, 300, c.KEYBOARD, self.coin_group)
-        coin_box_test2 = coin_box.Coin_box(300, 300, c.MOUSE, self.coin_group)
-        coin_box_test3 = coin_box.Coin_box(400, 300, c.BOOK, self.coin_group)
-        coin_box_test4 = coin_box.Coin_box(500, 350, c.HOTSIX, self.powerup_group)
-        self.coin_box_group = pg.sprite.Group(coin_box_test, coin_box_test2, coin_box_test3, coin_box_test4)
-        #self.coin_box_group = pg.sprite.Group()
+        coin_box1 = coin_box.Coin_box(838, 350, c.MOUSE, self.coin_group)
+        coin_box2 = coin_box.Coin_box(924, 350, c.KEYBOARD, self.coin_group)
+        coin_box3 = coin_box.Coin_box(881, 150, c.BOOK, self.coin_group)
+        coin_box4 = coin_box.Coin_box(1776, 170, c.HOTSIX, self.powerup_group)
+        coin_box5 = coin_box.Coin_box(2620, 350, c.BOOK, self.coin_group)
+        coin_box6 = coin_box.Coin_box(2706, 350, c.KEYBOARD, self.coin_group)
+        coin_box7 = coin_box.Coin_box(2663, 150, c.BOOK, self.coin_group)
+        coin_box8 = coin_box.Coin_box(4786, 150, c.MOUSE, self.coin_group)
+        coin_box9 = coin_box.Coin_box(4872, 150, c.BOOK, self.coin_group)
+        coin_box10 = coin_box.Coin_box(4700, 350, c.MOUSE, self.coin_group)
+        coin_box11 = coin_box.Coin_box(4700, 150, c.BOOK, self.coin_group)
+        coin_box12 = coin_box.Coin_box(4786, 350, c.MOUSE, self.coin_group)
+        coin_box13 = coin_box.Coin_box(3500, 350, c.MOUSE, self.coin_group)
+        coin_box14 = coin_box.Coin_box(3586, 350, c.BOOK, self.coin_group)
+        coin_box15 = coin_box.Coin_box(3586, 150, c.MOUSE, self.coin_group)
+        coin_box16 = coin_box.Coin_box(4872, 350, c.BOOK, self.coin_group)
+        coin_box17 = coin_box.Coin_box(6392, 350, c.KEYBOARD, self.coin_group)
+        coin_box18 = coin_box.Coin_box(6392, 150, c.MOUSE, self.coin_group)
+        coin_box19 = coin_box.Coin_box(7400, 350, c.BOOK, self.coin_group)
+        coin_box20 = coin_box.Coin_box(7486, 350, c.MOUSE, self.coin_group)
+        self.coin_box_group = pg.sprite.Group(coin_box1,
+                                              coin_box2,
+                                              coin_box3,
+                                              coin_box4,
+                                              coin_box5,
+                                              coin_box6,
+                                              coin_box7,
+                                              coin_box8,
+                                              coin_box9,
+                                              coin_box10,
+                                              coin_box11,
+                                              coin_box12,
+                                              coin_box13,
+                                              coin_box14,
+                                              coin_box15,
+                                              coin_box16,
+                                              coin_box17,
+                                              coin_box18,
+                                              coin_box19,
+                                              coin_box20)
 
 
     def setup_flag_pole(self):
@@ -278,19 +342,30 @@ class Level1(tools._State):
         enemy_group9 = pg.sprite.Group(goomba12, goomba13)
         enemy_group10 = pg.sprite.Group(goomba14, goomba15)'''
 
-        error0 = enemies.Error()
+        error1 = enemies.Error()
+        error2 = enemies.Error()
+        error3 = enemies.Error()
+        error4 = enemies.Error()
+        error5 = enemies.Error()
 
-        bug0 = enemies.Bug()
+        bug1 = enemies.Bug()
+        bug2 = enemies.Bug()
+        bug3 = enemies.Bug()
+        bug4 = enemies.Bug()
+        bug5 = enemies.Bug()
+        bug6 = enemies.Bug()
+        bug7 = enemies.Bug()
+        bug8 = enemies.Bug()
 
-        enemy_group1 = pg.sprite.Group(error0)
-        enemy_group2 = pg.sprite.Group()
-        enemy_group3 = pg.sprite.Group()
-        enemy_group4 = pg.sprite.Group()
-        enemy_group5 = pg.sprite.Group()
-        enemy_group6 = pg.sprite.Group()
-        enemy_group7 = pg.sprite.Group()
-        enemy_group8 = pg.sprite.Group()
-        enemy_group9 = pg.sprite.Group()
+        enemy_group1 = pg.sprite.Group(error1)
+        enemy_group2 = pg.sprite.Group(bug1)
+        enemy_group3 = pg.sprite.Group(bug2, error2)
+        enemy_group4 = pg.sprite.Group(bug3)
+        enemy_group5 = pg.sprite.Group(bug4)
+        enemy_group6 = pg.sprite.Group(error3, error4)
+        enemy_group7 = pg.sprite.Group(bug5, bug6)
+        enemy_group8 = pg.sprite.Group(error5, bug7)
+        enemy_group9 = pg.sprite.Group(bug8)
         enemy_group10 = pg.sprite.Group()
 
         self.enemy_group_list = [enemy_group1,
@@ -309,6 +384,7 @@ class Level1(tools._State):
         self.mario = mario.Mario()
         self.mario.rect.x = self.viewport.x + 110
         self.mario.rect.bottom = c.GROUND_HEIGHT
+        self.mario.level = c.LEVEL1
 
 
     def setup_checkpoints(self):
@@ -356,6 +432,7 @@ class Level1(tools._State):
         self.check_if_time_out()
         self.blit_everything(surface)
         #self.sound_manager.update(self.game_info, self.mario)
+        #print(self.mario.level)
 
 
 
@@ -375,7 +452,7 @@ class Level1(tools._State):
         """Updates mario in a transition state (like becoming big, small,
          or dies). Checks if he leaves the transition state or dies to
          change the level state back"""
-        self.mario.update(keys, self.game_info, self.powerup_group)
+        self.mario.update(keys, self.game_info, self.powerup_group, self.mario.level)
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         if self.flag_score:
@@ -401,7 +478,7 @@ class Level1(tools._State):
 
     def update_all_sprites(self, keys):
         """Updates the location of all sprites on the screen."""
-        self.mario.update(keys, self.game_info, self.powerup_group)
+        self.mario.update(keys, self.game_info, self.powerup_group, self.mario.level)
         for score in self.moving_score_list:
             score.update(self.moving_score_list, self.game_info)
         if self.flag_score:
@@ -473,7 +550,7 @@ class Level1(tools._State):
     def create_flag_points(self):
         """Creates the points that appear when Mario touches the
         flag pole"""
-        x = 4100
+        x = 8505
         y = c.GROUND_HEIGHT - 60
         mario_bottom = self.mario.rect.bottom
 
@@ -733,7 +810,6 @@ class Level1(tools._State):
                 obstacle2 = False
             else:
                 obstacle1 = False
-
         return obstacle1, obstacle2
 
 
@@ -1416,7 +1492,7 @@ class Level1(tools._State):
             if self.game_info[c.SCORE] < 3000:
                 self.next = c.GAME_OVER
             elif self.game_info[c.SCORE] >= 3000:
-                self.next = c.LEVEL2
+                self.next = c.TOSTAGE2
             self.done = True
 
 
